@@ -13,7 +13,9 @@ Trades MapDequeOrderBook::addOrder(Order order) {
   switch (order.tif) {
   case TimeInForce::GTC:
     matchOrder(order, trades);
-    insertResting(order);
+    if (order.qty > 0 && order.type == OrderType::Limit) {
+      insertResting(order);
+    }
     break;
 
   case TimeInForce::IOC:
@@ -133,7 +135,7 @@ void MapDequeOrderBook::matchOrder(Order& order, Trades& trades) {
         (order.side == Side::Bid) ? levels.begin() : std::prev(levels.end());
     auto restingPrice = levelIt->first;
 
-    if (canCross(order, restingPrice)) {
+    if (!canCross(order, restingPrice)) {
       break;
     }
 
@@ -149,7 +151,7 @@ void MapDequeOrderBook::matchOrder(Order& order, Trades& trades) {
       restingOrder.qty -= filledQty;
       levelIt->second.totalQty -= filledQty;
 
-      trades.push_back({.agressorId = order.id,
+      trades.push_back({.aggressorId = order.id,
                         .passiveId = restingOrder.id,
                         .price = restingOrder.price,
                         .qty = filledQty});
@@ -176,6 +178,16 @@ bool MapDequeOrderBook::canCross(const Order& order, Price restingPrice) const {
   }
 
   return order.price <= restingPrice;
+}
+
+void MapDequeOrderBook::insertResting(const Order& order) {
+  auto& levels = (order.side == Side::Bid) ? bids_ : asks_;
+  auto& level = levels[order.price];
+
+  level.totalQty += order.qty;
+  level.queue.push_back(order.id);
+
+  orders_[order.id] = order;
 }
 
 bool MapDequeOrderBook::canFullyFill(const Order& order) const {

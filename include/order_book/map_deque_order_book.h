@@ -26,7 +26,7 @@ public:
 
 private:
   struct LevelInfo {
-    Quantity totalQty;
+    Quantity totalQty{0};
     std::deque<OrderId> queue;
   };
 

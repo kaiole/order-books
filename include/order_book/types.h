@@ -27,7 +27,7 @@ struct Order {
 };
 
 struct Trade {
-  OrderId agressorId;
+  OrderId aggressorId;
   OrderId passiveId;
   Price price;
   Quantity qty;
