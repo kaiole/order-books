@@ -28,11 +28,11 @@ public:
 private:
   struct LevelInfo {
     Quantity totalQty;
-    std::deque<OrderId> orders;
+    std::deque<OrderId> queue;
   };
 
-  std::map<Price, LevelInfo, std::greater<Price>> bids_;
-  std::map<Price, LevelInfo, std::less<Price>> asks_;
+  std::map<Price, LevelInfo> bids_;
+  std::map<Price, LevelInfo> asks_;
   std::unordered_map<OrderId, Order> orders_;
 
   void matchOrder(Order& order, Trades& trades);

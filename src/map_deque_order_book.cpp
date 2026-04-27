@@ -9,16 +9,16 @@
 // bool MapOrderBook::modifyOrder(OrderId id, Quantity newQty);
 // bool MapOrderBook::cancelOrder(OrderId id);
 
-std::optional<std::pair<Price, Quantity>> MapOrderBook::bestBid() const {
+std::optional<std::pair<Price, Quantity>> MapDequeOrderBook::bestBid() const {
   if (bids_.empty()) {
     return std::nullopt;
   }
 
-  const auto& [price, level] = *bids_.begin();
+  const auto& [price, level] = *bids_.rbegin();
   return std::pair<Price, Quantity>{price, level.totalQty};
 }
 
-std::optional<std::pair<Price, Quantity>> MapOrderBook::bestAsk() const {
+std::optional<std::pair<Price, Quantity>> MapDequeOrderBook::bestAsk() const {
   if (asks_.empty()) {
     return std::nullopt;
   }
