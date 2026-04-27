@@ -4,7 +4,6 @@
 
 #include <cstddef>
 #include <deque>
-#include <functional>
 #include <map>
 #include <optional>
 #include <unordered_map>
@@ -36,6 +35,8 @@ private:
   std::unordered_map<OrderId, Order> orders_;
 
   void matchOrder(Order& order, Trades& trades);
+
+  bool canCross(const Order& order, Price restingPrice) const;
 
   void insertResting(const Order& order);
 

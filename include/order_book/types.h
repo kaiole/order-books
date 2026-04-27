@@ -5,7 +5,7 @@
 
 using OrderId = std::uint64_t;
 using Price = std::int64_t;
-using Quantity = std::uint64_t;
+using Quantity = std::int64_t;
 
 enum class Side : uint8_t { Bid, Ask };
 
