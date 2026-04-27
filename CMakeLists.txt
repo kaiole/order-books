@@ -14,7 +14,7 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-option(ORDER_BOOKS_BUILD_TESTS "Build tests" OFF)
+option(ORDER_BOOKS_BUILD_TESTS "Build tests" ON)
 
 file(GLOB_RECURSE LIB_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 
