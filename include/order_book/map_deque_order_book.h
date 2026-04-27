@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <utility>
 
-class MapOrderBook {
+class MapDequeOrderBook {
 public:
   Trades addOrder(Order order);
 
@@ -35,7 +35,7 @@ private:
   std::map<Price, LevelInfo, std::less<Price>> asks_;
   std::unordered_map<OrderId, Order> orders_;
 
-  void matchOrder(const Order& order, Trades& trades);
+  void matchOrder(Order& order, Trades& trades);
 
   void insertResting(const Order& order);
 
