@@ -1,0 +1,23 @@
+Checks: >-
+  clang-analyzer-*,
+  bugprone-*,
+  performance-*,
+  modernize-*,
+  readability-*,
+  cppcoreguidelines-*,
+  misc-*,
+  -hicpp-*,
+  -portability-*,
+  -readability-magic-numbers,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -readability-identifier-naming,
+  readability-braces-around-statements
+
+WarningsAsErrors: ''
+HeaderFilterRegex: '.*'
+AnalyzeTemporaryDtors: false
+FormatStyle: file
+
+CheckOptions:
+  - key: modernize-use-nullptr.NullMacros
+    value: 'NULL'

@@ -1,0 +1,23 @@
+BasedOnStyle: LLVM
+
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+
+ColumnLimit: 80
+
+PointerAlignment: Left
+ReferenceAlignment: Pointer
+DerivePointerAlignment: false
+
+AllowShortIfStatementsOnASingleLine: WithoutElse
+
+FixNamespaceComments: true
+ShortNamespaceLines: 0
+
+IncludeBlocks: Regroup
+
+AlignAfterOpenBracket: Align
+AlignTrailingComments: true
+
+MaxEmptyLinesToKeep: 1
