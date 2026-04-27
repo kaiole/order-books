@@ -30,8 +30,67 @@ Trades MapDequeOrderBook::addOrder(Order order) {
   return trades;
 }
 
-// bool MapOrderBook::modifyOrder(OrderId id, Quantity newQty);
-// bool MapOrderBook::cancelOrder(OrderId id);
+bool MapDequeOrderBook::modifyOrder(OrderId id, Quantity newQty) {
+  auto orderIt = orders_.find(id);
+
+  if (orderIt == orders_.end()) {
+    return false;
+  }
+
+  auto& order = orderIt->second;
+  if (newQty >= order.qty || newQty == 0) {
+    return false;
+  }
+
+  auto& levels = (order.side == Side::Bid) ? bids_ : asks_;
+  auto levelIt = levels.find(order.price);
+
+  if (levelIt == levels.end()) {
+    return false;
+  }
+
+  auto& level = levelIt->second;
+
+  level.totalQty += newQty - order.qty;
+  order.qty = newQty;
+
+  return true;
+}
+
+bool MapDequeOrderBook::cancelOrder(OrderId id) {
+  auto orderIt = orders_.find(id);
+
+  if (orderIt == orders_.end()) {
+    return false;
+  }
+
+  const auto& order = orderIt->second;
+  auto& levels = (order.side == Side::Bid) ? bids_ : asks_;
+
+  auto levelIt = levels.find(order.price);
+
+  if (levelIt == levels.end()) {
+    return false;
+  }
+
+  auto& level = levelIt->second;
+  auto queueIt = std::find(level.queue.begin(), level.queue.end(), id);
+
+  if (queueIt == level.queue.end()) {
+    return false;
+  }
+
+  level.queue.erase(queueIt);
+  level.totalQty -= order.qty;
+
+  if (level.queue.empty()) {
+    levels.erase(levelIt);
+  }
+
+  orders_.erase(orderIt);
+
+  return true;
+}
 
 std::optional<std::pair<Price, Quantity>> MapDequeOrderBook::bestBid() const {
   if (bids_.empty()) {
@@ -78,10 +137,10 @@ void MapDequeOrderBook::matchOrder(Order& order, Trades& trades) {
       break;
     }
 
-    auto& dq = levelIt->second.queue;
+    auto& queue = levelIt->second.queue;
 
-    while (order.qty > 0 && !dq.empty()) {
-      auto restingIt = orders_.find(dq.front());
+    while (order.qty > 0 && !queue.empty()) {
+      auto restingIt = orders_.find(queue.front());
       auto& restingOrder = restingIt->second;
 
       Quantity filledQty = std::min(order.qty, restingOrder.qty);
@@ -96,12 +155,12 @@ void MapDequeOrderBook::matchOrder(Order& order, Trades& trades) {
                         .qty = filledQty});
 
       if (restingOrder.qty == 0) {
-        dq.pop_front();
+        queue.pop_front();
         orders_.erase(restingIt);
       }
     }
 
-    if (dq.empty()) {
+    if (queue.empty()) {
       levels.erase(levelIt);
     }
   }
