@@ -119,30 +119,21 @@ bool MapDequeOrderBook::canCross(const Order& order, Price restingPrice) const {
   return order.price <= restingPrice;
 }
 
-bool MapDequeOrderBook::canFullyFill(const Order& order) {
-  Quantity curQty{order.qty};
+bool MapDequeOrderBook::canFullyFill(const Order& order) const {
+  auto fillAgainst = [this, &order]<typename T>(T first, T last) {
+    Quantity curQty{order.qty};
 
-  if (order.side == Side::Bid && !asks_.empty()) {
-    for (auto it = asks_.begin();
-         it != asks_.end() && canCross(order, it->first); ++it) {
+    for (auto it = first;
+         it != last && curQty != 0 && canCross(order, it->first); ++it) {
       curQty -= std::min(curQty, it->second.totalQty);
-
-      if (curQty == 0) {
-        return true;
-      }
     }
 
-    return false;
+    return curQty;
+  };
+
+  if (order.side == Side::Bid) {
+    return fillAgainst(asks_.begin(), asks_.end()) == 0;
   }
 
-  for (auto it = bids_.rbegin();
-       it != bids_.rend() && canCross(order, it->first); ++it) {
-    curQty -= std::min(curQty, it->second.totalQty);
-
-    if (curQty == 0) {
-      return true;
-    }
-  }
-
-  return false;
+  return fillAgainst(bids_.rbegin(), bids_.rend()) == 0;
 }

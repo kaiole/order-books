@@ -40,5 +40,5 @@ private:
 
   void insertResting(const Order& order);
 
-  bool canFullyFill(const Order& order);
+  bool canFullyFill(const Order& order) const;
 };
