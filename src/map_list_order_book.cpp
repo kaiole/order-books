@@ -32,67 +32,64 @@ Trades MapListOrderBook::addOrder(Order order) {
   return trades;
 }
 
-// bool MapListOrderBook::modifyOrder(OrderId id, Quantity newQty) {
-//   auto orderIt = orders_.find(id);
-//
-//   if (orderIt == orders_.end()) {
-//     return false;
-//   }
-//
-//   auto& order = orderIt->second;
-//   if (newQty >= order.qty || newQty == 0) {
-//     return false;
-//   }
-//
-//   auto& levels = (order.side == Side::Bid) ? bids_ : asks_;
-//   auto levelIt = levels.find(order.price);
-//
-//   if (levelIt == levels.end()) {
-//     return false;
-//   }
-//
-//   auto& level = levelIt->second;
-//
-//   level.totalQty += newQty - order.qty;
-//   order.qty = newQty;
-//
-//   return true;
-// }
+bool MapListOrderBook::modifyOrder(OrderId id, Quantity newQty) {
+  auto orderIt = orders_.find(id);
 
-// bool MapListOrderBook::cancelOrder(OrderId id) {
-//   auto orderIt = orders_.find(id);
-//
-//   if (orderIt == orders_.end()) {
-//     return false;
-//   }
-//
-//   const auto& order = orderIt->second;
-//   auto& levels = (order.side == Side::Bid) ? bids_ : asks_;
-//
-//   auto levelIt = levels.find(order.price);
-//
-//   if (levelIt == levels.end()) {
-//     return false;
-//   }
-//
-//   auto& level = levelIt->second;
-//   auto queueIt = std::find(level.queue.begin(), level.queue.end(), id);
-//
-//   if (queueIt == level.queue.end()) {
-//     return false;
-//   }
-//
-//   level.queue.erase(queueIt);
-//   level.totalQty -= order.qty;
-//
-//   if (level.queue.empty()) {
-//     levels.erase(levelIt);
-//   }
-//
-//   orders_.erase(orderIt);
-//
-//   return true;
-// }
+  if (orderIt == orders_.end()) {
+    return false;
+  }
+
+  auto& orderInfo = orderIt->second;
+  auto& order = orderInfo.order;
+  if (newQty >= order.qty || newQty == 0) {
+    return false;
+  }
+
+  auto& levels = (order.side == Side::Bid) ? bids_ : asks_;
+  auto levelIt = levels.find(order.price);
+
+  if (levelIt == levels.end()) {
+    return false;
+  }
+
+  auto& level = levelIt->second;
+
+  level.totalQty += newQty - order.qty;
+  order.qty = newQty;
+
+  return true;
+}
+
+bool MapListOrderBook::cancelOrder(OrderId id) {
+  auto orderIt = orders_.find(id);
+
+  if (orderIt == orders_.end()) {
+    return false;
+  }
+
+  auto& orderInfo = orderIt->second;
+  const auto& order = orderInfo.order;
+
+  auto& levels = (order.side == Side::Bid) ? bids_ : asks_;
+
+  auto levelIt = levels.find(order.price);
+  if (levelIt == levels.end()) {
+    return false;
+  }
+
+  auto& level = levelIt->second;
+
+  level.queue.erase(orderInfo.orderIt);
+  level.totalQty -= order.qty;
+
+  if (level.queue.empty()) {
+    levels.erase(levelIt);
+  }
+
+  orders_.erase(orderIt);
+
+  return true;
+}
 
 std::optional<std::pair<Price, Quantity>> MapListOrderBook::bestBid() const {
   if (bids_.empty()) {
