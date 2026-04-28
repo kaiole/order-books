@@ -1,0 +1,303 @@
+#include "order_book/map_deque_order_book.h"
+#include "order_book/order_book.h"
+#include "order_book/types.h"
+
+#include <gtest/gtest.h>
+#include <optional>
+
+namespace {
+
+Order makeOrder(OrderId id, Side side, Price price, Quantity qty,
+                OrderType type = OrderType::Limit,
+                TimeInForce tif = TimeInForce::GTC) {
+  return Order{.id = id,
+               .side = side,
+               .type = type,
+               .tif = tif,
+               .price = price,
+               .qty = qty};
+}
+
+template <typename T> class OrderBookTest : public ::testing::Test {
+protected:
+  T book;
+};
+
+using Implementations = ::testing::Types<MapDequeOrderBook>;
+
+static_assert(OrderBookLike<MapDequeOrderBook>);
+
+TYPED_TEST_SUITE(OrderBookTest, Implementations);
+
+TYPED_TEST(OrderBookTest, EmptyBookHasNoBestPrices) {
+  EXPECT_EQ(this->book.bestBid(), std::nullopt);
+  EXPECT_EQ(this->book.bestAsk(), std::nullopt);
+  EXPECT_EQ(this->book.depth(Side::Bid), 0u);
+  EXPECT_EQ(this->book.depth(Side::Ask), 0u);
+  EXPECT_EQ(this->book.orderCount(), 0u);
+}
+
+TYPED_TEST(OrderBookTest, RestingLimitInsertsWithoutTrades) {
+  auto trades = this->book.addOrder(makeOrder(1, Side::Bid, 100, 10));
+
+  EXPECT_TRUE(trades.empty());
+  EXPECT_EQ(this->book.bestBid(), (std::pair<Price, Quantity>{100, 10}));
+  EXPECT_EQ(this->book.bestAsk(), std::nullopt);
+  EXPECT_EQ(this->book.depth(Side::Bid), 1u);
+  EXPECT_EQ(this->book.orderCount(), 1u);
+}
+
+TYPED_TEST(OrderBookTest, BestBidIsHighestPrice) {
+  this->book.addOrder(makeOrder(1, Side::Bid, 100, 5));
+  this->book.addOrder(makeOrder(2, Side::Bid, 102, 3));
+  this->book.addOrder(makeOrder(3, Side::Bid, 101, 7));
+
+  EXPECT_EQ(this->book.bestBid(), (std::pair<Price, Quantity>{102, 3}));
+  EXPECT_EQ(this->book.depth(Side::Bid), 3u);
+}
+
+TYPED_TEST(OrderBookTest, BestAskIsLowestPrice) {
+  this->book.addOrder(makeOrder(1, Side::Ask, 105, 5));
+  this->book.addOrder(makeOrder(2, Side::Ask, 103, 3));
+  this->book.addOrder(makeOrder(3, Side::Ask, 104, 7));
+
+  EXPECT_EQ(this->book.bestAsk(), (std::pair<Price, Quantity>{103, 3}));
+  EXPECT_EQ(this->book.depth(Side::Ask), 3u);
+}
+
+TYPED_TEST(OrderBookTest, MultipleOrdersAtSamePriceAggregateQty) {
+  this->book.addOrder(makeOrder(1, Side::Bid, 100, 5));
+  this->book.addOrder(makeOrder(2, Side::Bid, 100, 7));
+  this->book.addOrder(makeOrder(3, Side::Bid, 100, 3));
+
+  EXPECT_EQ(this->book.qtyAt(Side::Bid, 100), 15);
+  EXPECT_EQ(this->book.depth(Side::Bid), 1u);
+  EXPECT_EQ(this->book.orderCount(), 3u);
+}
+
+TYPED_TEST(OrderBookTest, QtyAtReturnsZeroForUnknownPrice) {
+  this->book.addOrder(makeOrder(1, Side::Bid, 100, 5));
+
+  EXPECT_EQ(this->book.qtyAt(Side::Bid, 99), 0);
+  EXPECT_EQ(this->book.qtyAt(Side::Ask, 100), 0);
+}
+
+TYPED_TEST(OrderBookTest, CrossingLimitProducesTradeAtRestingPrice) {
+  this->book.addOrder(makeOrder(1, Side::Ask, 100, 10));
+  auto trades = this->book.addOrder(makeOrder(2, Side::Bid, 101, 4));
+
+  ASSERT_EQ(trades.size(), 1u);
+  EXPECT_EQ(trades[0].aggressorId, 2u);
+  EXPECT_EQ(trades[0].passiveId, 1u);
+  EXPECT_EQ(trades[0].price, 100);
+  EXPECT_EQ(trades[0].qty, 4);
+
+  EXPECT_EQ(this->book.bestAsk(), (std::pair<Price, Quantity>{100, 6}));
+  EXPECT_EQ(this->book.bestBid(), std::nullopt);
+}
+
+TYPED_TEST(OrderBookTest, MatchingFollowsFifoAtSameLevel) {
+  this->book.addOrder(makeOrder(1, Side::Ask, 100, 4));
+  this->book.addOrder(makeOrder(2, Side::Ask, 100, 5));
+  this->book.addOrder(makeOrder(3, Side::Ask, 100, 6));
+
+  auto trades = this->book.addOrder(makeOrder(10, Side::Bid, 100, 7));
+
+  ASSERT_EQ(trades.size(), 2u);
+  EXPECT_EQ(trades[0].passiveId, 1u);
+  EXPECT_EQ(trades[0].qty, 4);
+  EXPECT_EQ(trades[1].passiveId, 2u);
+  EXPECT_EQ(trades[1].qty, 3);
+
+  EXPECT_EQ(this->book.qtyAt(Side::Ask, 100), 8);
+  EXPECT_EQ(this->book.orderCount(), 2u);
+}
+
+TYPED_TEST(OrderBookTest, MatchingSweepsMultipleLevels) {
+  this->book.addOrder(makeOrder(1, Side::Ask, 100, 3));
+  this->book.addOrder(makeOrder(2, Side::Ask, 101, 4));
+  this->book.addOrder(makeOrder(3, Side::Ask, 102, 5));
+
+  auto trades = this->book.addOrder(makeOrder(10, Side::Bid, 102, 10));
+
+  ASSERT_EQ(trades.size(), 3u);
+  EXPECT_EQ(trades[0].price, 100);
+  EXPECT_EQ(trades[1].price, 101);
+  EXPECT_EQ(trades[2].price, 102);
+  EXPECT_EQ(trades[2].qty, 3);
+
+  EXPECT_EQ(this->book.depth(Side::Ask), 1u);
+
+  EXPECT_EQ(this->book.qtyAt(Side::Ask, 100), 0);
+  EXPECT_EQ(this->book.qtyAt(Side::Ask, 101), 0);
+  EXPECT_EQ(this->book.qtyAt(Side::Ask, 102), 2);
+
+  EXPECT_EQ(this->book.bestAsk(), (std::pair<Price, Quantity>{102, 2}));
+}
+
+TYPED_TEST(OrderBookTest, GtcLeavesUnmatchedRemainderResting) {
+  this->book.addOrder(makeOrder(1, Side::Ask, 100, 3));
+  auto trades = this->book.addOrder(makeOrder(2, Side::Bid, 100, 10));
+
+  ASSERT_EQ(trades.size(), 1u);
+  EXPECT_EQ(trades[0].qty, 3);
+
+  EXPECT_EQ(this->book.bestBid(), (std::pair<Price, Quantity>{100, 7}));
+  EXPECT_EQ(this->book.bestAsk(), std::nullopt);
+}
+
+TYPED_TEST(OrderBookTest, NonCrossingLimitDoesNotMatch) {
+  this->book.addOrder(makeOrder(1, Side::Ask, 105, 5));
+  auto trades = this->book.addOrder(makeOrder(2, Side::Bid, 104, 5));
+
+  EXPECT_TRUE(trades.empty());
+  EXPECT_EQ(this->book.bestBid(), (std::pair<Price, Quantity>{104, 5}));
+  EXPECT_EQ(this->book.bestAsk(), (std::pair<Price, Quantity>{105, 5}));
+}
+
+TYPED_TEST(OrderBookTest, IocFillsAvailableThenDiscardsRemainder) {
+  this->book.addOrder(makeOrder(1, Side::Ask, 100, 3));
+  auto trades = this->book.addOrder(
+      makeOrder(2, Side::Bid, 100, 10, OrderType::Limit, TimeInForce::IOC));
+
+  ASSERT_EQ(trades.size(), 1u);
+  EXPECT_EQ(trades[0].qty, 3);
+
+  EXPECT_EQ(this->book.bestBid(), std::nullopt);
+  EXPECT_EQ(this->book.bestAsk(), std::nullopt);
+  EXPECT_EQ(this->book.orderCount(), 0u);
+}
+
+TYPED_TEST(OrderBookTest, FokExecutesWhenFullyFillable) {
+  this->book.addOrder(makeOrder(1, Side::Ask, 100, 4));
+  this->book.addOrder(makeOrder(2, Side::Ask, 101, 6));
+
+  auto trades = this->book.addOrder(
+      makeOrder(10, Side::Bid, 101, 10, OrderType::Limit, TimeInForce::FOK));
+
+  ASSERT_EQ(trades.size(), 2u);
+  EXPECT_EQ(trades[0].qty, 4);
+  EXPECT_EQ(trades[1].qty, 6);
+  EXPECT_EQ(this->book.bestAsk(), std::nullopt);
+}
+
+TYPED_TEST(OrderBookTest, FokRejectedWhenInsufficientLiquidity) {
+  this->book.addOrder(makeOrder(1, Side::Ask, 100, 4));
+
+  auto trades = this->book.addOrder(
+      makeOrder(10, Side::Bid, 100, 10, OrderType::Limit, TimeInForce::FOK));
+
+  EXPECT_TRUE(trades.empty());
+  EXPECT_EQ(this->book.bestAsk(), (std::pair<Price, Quantity>{100, 4}));
+  EXPECT_EQ(this->book.orderCount(), 1u);
+}
+
+TYPED_TEST(OrderBookTest, FokRejectedWhenPriceDoesNotCrossEnoughLevels) {
+  this->book.addOrder(makeOrder(1, Side::Ask, 100, 4));
+  this->book.addOrder(makeOrder(2, Side::Ask, 105, 10));
+
+  auto trades = this->book.addOrder(
+      makeOrder(10, Side::Bid, 100, 10, OrderType::Limit, TimeInForce::FOK));
+
+  EXPECT_TRUE(trades.empty());
+  EXPECT_EQ(this->book.qtyAt(Side::Ask, 100), 4);
+  EXPECT_EQ(this->book.qtyAt(Side::Ask, 105), 10);
+}
+
+TYPED_TEST(OrderBookTest, MarketOrderCrossesAnyPrice) {
+  this->book.addOrder(makeOrder(1, Side::Ask, 100, 3));
+  this->book.addOrder(makeOrder(2, Side::Ask, 200, 4));
+
+  auto trades = this->book.addOrder(
+      makeOrder(10, Side::Bid, 0, 5, OrderType::Market, TimeInForce::IOC));
+
+  ASSERT_EQ(trades.size(), 2u);
+  EXPECT_EQ(trades[0].price, 100);
+  EXPECT_EQ(trades[1].price, 200);
+  EXPECT_EQ(trades[1].qty, 2);
+}
+
+TYPED_TEST(OrderBookTest, MarketOrderDoesNotRest) {
+  this->book.addOrder(makeOrder(1, Side::Ask, 100, 3));
+
+  auto trades = this->book.addOrder(
+      makeOrder(10, Side::Bid, 0, 10, OrderType::Market, TimeInForce::GTC));
+
+  ASSERT_EQ(trades.size(), 1u);
+  EXPECT_EQ(trades[0].qty, 3);
+  EXPECT_EQ(this->book.bestBid(), std::nullopt);
+  EXPECT_EQ(this->book.orderCount(), 0u);
+}
+
+TYPED_TEST(OrderBookTest, CancelRemovesRestingOrder) {
+  this->book.addOrder(makeOrder(1, Side::Bid, 100, 5));
+  this->book.addOrder(makeOrder(2, Side::Bid, 100, 7));
+
+  EXPECT_TRUE(this->book.cancelOrder(1));
+
+  EXPECT_EQ(this->book.qtyAt(Side::Bid, 100), 7);
+  EXPECT_EQ(this->book.orderCount(), 1u);
+}
+
+TYPED_TEST(OrderBookTest, CancelRemovesEmptyLevel) {
+  this->book.addOrder(makeOrder(1, Side::Bid, 100, 5));
+
+  EXPECT_TRUE(this->book.cancelOrder(1));
+
+  EXPECT_EQ(this->book.depth(Side::Bid), 0u);
+  EXPECT_EQ(this->book.bestBid(), std::nullopt);
+}
+
+TYPED_TEST(OrderBookTest, CancelUnknownOrderReturnsFalse) {
+  EXPECT_FALSE(this->book.cancelOrder(42));
+}
+
+TYPED_TEST(OrderBookTest, CancelTwiceReturnsFalseSecondTime) {
+  this->book.addOrder(makeOrder(1, Side::Bid, 100, 5));
+
+  EXPECT_TRUE(this->book.cancelOrder(1));
+  EXPECT_FALSE(this->book.cancelOrder(1));
+}
+
+TYPED_TEST(OrderBookTest, ModifyDownReducesQtyAndPreservesPosition) {
+  this->book.addOrder(makeOrder(1, Side::Ask, 100, 10));
+  this->book.addOrder(makeOrder(2, Side::Ask, 100, 5));
+
+  EXPECT_EQ(this->book.qtyAt(Side::Ask, 100), 15);
+  EXPECT_TRUE(this->book.modifyOrder(1, 4));
+  EXPECT_EQ(this->book.qtyAt(Side::Ask, 100), 9);
+
+  auto trades = this->book.addOrder(makeOrder(10, Side::Bid, 100, 4));
+  ASSERT_EQ(trades.size(), 1u);
+  EXPECT_EQ(trades[0].passiveId, 1u);
+  EXPECT_EQ(trades[0].qty, 4);
+}
+
+TYPED_TEST(OrderBookTest, ModifyUpRejected) {
+  this->book.addOrder(makeOrder(1, Side::Bid, 100, 5));
+
+  EXPECT_FALSE(this->book.modifyOrder(1, 10));
+  EXPECT_EQ(this->book.qtyAt(Side::Bid, 100), 5);
+}
+
+TYPED_TEST(OrderBookTest, ModifyToZeroRejected) {
+  this->book.addOrder(makeOrder(1, Side::Bid, 100, 5));
+
+  EXPECT_FALSE(this->book.modifyOrder(1, 0));
+  EXPECT_EQ(this->book.qtyAt(Side::Bid, 100), 5);
+}
+
+TYPED_TEST(OrderBookTest, ModifyUnknownOrderReturnsFalse) {
+  EXPECT_FALSE(this->book.modifyOrder(42, 1));
+}
+
+TYPED_TEST(OrderBookTest, FullyFilledRestingOrderIsRemoved) {
+  this->book.addOrder(makeOrder(1, Side::Ask, 100, 3));
+  this->book.addOrder(makeOrder(2, Side::Bid, 100, 3));
+
+  EXPECT_EQ(this->book.orderCount(), 0u);
+  EXPECT_EQ(this->book.bestAsk(), std::nullopt);
+  EXPECT_FALSE(this->book.cancelOrder(1));
+}
+
+} // namespace
