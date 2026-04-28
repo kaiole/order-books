@@ -10,6 +10,10 @@
 Trades MapDequeOrderBook::addOrder(Order order) {
   Trades trades;
 
+  if (order.qty <= 0 || orders_.contains(order.id)) {
+    return trades;
+  }
+
   switch (order.tif) {
   case TimeInForce::GTC:
     matchOrder(order, trades);
@@ -40,7 +44,7 @@ bool MapDequeOrderBook::modifyOrder(OrderId id, Quantity newQty) {
   }
 
   auto& order = orderIt->second;
-  if (newQty >= order.qty || newQty == 0) {
+  if (newQty >= order.qty || newQty <= 0) {
     return false;
   }
 
@@ -193,7 +197,7 @@ void MapDequeOrderBook::insertResting(const Order& order) {
 }
 
 bool MapDequeOrderBook::canFullyFill(const Order& order) const {
-  auto fillAgainst = [this, &order]<typename T>(T first, T last) {
+  auto remainingAfterFill = [this, &order]<typename T>(T first, T last) {
     Quantity curQty{order.qty};
 
     for (auto it = first;
@@ -205,8 +209,8 @@ bool MapDequeOrderBook::canFullyFill(const Order& order) const {
   };
 
   if (order.side == Side::Bid) {
-    return fillAgainst(asks_.begin(), asks_.end()) == 0;
+    return remainingAfterFill(asks_.begin(), asks_.end()) == 0;
   }
 
-  return fillAgainst(bids_.rbegin(), bids_.rend()) == 0;
+  return remainingAfterFill(bids_.rbegin(), bids_.rend()) == 0;
 }

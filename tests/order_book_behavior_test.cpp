@@ -116,6 +116,23 @@ TYPED_TEST(RestingTest, QtyAtReturnsZeroForUnknownPrice) {
   EXPECT_EQ(this->book.qtyAt(Side::Ask, 100), 0);
 }
 
+TYPED_TEST(RestingTest, RejectsNonPositiveQuantity) {
+  EXPECT_TRUE(this->book.addOrder(makeOrder(1, Side::Bid, 100, 0)).empty());
+  EXPECT_TRUE(this->book.addOrder(makeOrder(2, Side::Bid, 100, -5)).empty());
+
+  EXPECT_EQ(this->book.orderCount(), 0u);
+  EXPECT_EQ(this->book.depth(Side::Bid), 0u);
+}
+
+TYPED_TEST(RestingTest, RejectsDuplicateLiveOrderId) {
+  EXPECT_TRUE(this->book.addOrder(makeOrder(1, Side::Bid, 100, 5)).empty());
+  EXPECT_TRUE(this->book.addOrder(makeOrder(1, Side::Bid, 101, 7)).empty());
+
+  EXPECT_EQ(this->book.orderCount(), 1u);
+  EXPECT_EQ(this->book.bestBid(), (std::pair<Price, Quantity>{100, 5}));
+  EXPECT_EQ(this->book.qtyAt(Side::Bid, 101), 0);
+}
+
 /*******************************************************************************
  * Matching Tests
  ******************************************************************************/

@@ -10,6 +10,10 @@
 Trades MapListOrderBook::addOrder(Order order) {
   Trades trades;
 
+  if (order.qty <= 0 || orders_.contains(order.id)) {
+    return trades;
+  }
+
   switch (order.tif) {
   case TimeInForce::GTC:
     matchOrder(order, trades);
@@ -41,7 +45,7 @@ bool MapListOrderBook::modifyOrder(OrderId id, Quantity newQty) {
 
   auto& orderInfo = orderIt->second;
   auto& order = orderInfo.order;
-  if (newQty >= order.qty || newQty == 0) {
+  if (newQty >= order.qty || newQty <= 0) {
     return false;
   }
 
@@ -192,7 +196,7 @@ void MapListOrderBook::insertResting(const Order& order) {
 }
 
 bool MapListOrderBook::canFullyFill(const Order& order) const {
-  auto fillAgainst = [this, &order]<typename T>(T first, T last) {
+  auto remainingAfterFill = [this, &order]<typename T>(T first, T last) {
     Quantity curQty{order.qty};
 
     for (auto it = first;
@@ -204,8 +208,8 @@ bool MapListOrderBook::canFullyFill(const Order& order) const {
   };
 
   if (order.side == Side::Bid) {
-    return fillAgainst(asks_.begin(), asks_.end()) == 0;
+    return remainingAfterFill(asks_.begin(), asks_.end()) == 0;
   }
 
-  return fillAgainst(bids_.rbegin(), bids_.rend()) == 0;
+  return remainingAfterFill(bids_.rbegin(), bids_.rend()) == 0;
 }
