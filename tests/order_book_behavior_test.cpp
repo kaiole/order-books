@@ -35,11 +35,11 @@ template <typename T> class TifTest : public OrderBookTestBase<T> {};
 template <typename T> class MarketOrderTest : public OrderBookTestBase<T> {};
 
 // Run suites on specified implementations
-using RestingImpl = ::testing::Types<MapDequeOrderBook>;
-using MatchingImpl = ::testing::Types<MapDequeOrderBook>;
+using RestingImpl = ::testing::Types<MapDequeOrderBook, MapListOrderBook>;
+using MatchingImpl = ::testing::Types<MapDequeOrderBook, MapListOrderBook>;
+using TifImpl = ::testing::Types<MapDequeOrderBook, MapListOrderBook>;
 using CancelImpl = ::testing::Types<MapDequeOrderBook>;
 using ModifyImpl = ::testing::Types<MapDequeOrderBook>;
-using TifImpl = ::testing::Types<MapDequeOrderBook>;
 using MarketOrderImpl = ::testing::Types<MapDequeOrderBook>;
 
 TYPED_TEST_SUITE(RestingTest, RestingImpl);
