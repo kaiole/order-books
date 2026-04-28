@@ -29,35 +29,35 @@ protected:
 
 template <typename T> class RestingTest : public OrderBookTestBase<T> {};
 template <typename T> class MatchingTest : public OrderBookTestBase<T> {};
-template <typename T> class CancelTest : public OrderBookTestBase<T> {};
-template <typename T> class ModifyTest : public OrderBookTestBase<T> {};
-template <typename T> class TifTest : public OrderBookTestBase<T> {};
 template <typename T> class MarketOrderTest : public OrderBookTestBase<T> {};
+template <typename T> class TifTest : public OrderBookTestBase<T> {};
+template <typename T> class ModifyTest : public OrderBookTestBase<T> {};
+template <typename T> class CancelTest : public OrderBookTestBase<T> {};
 
 // Run suites on specified implementations
 using RestingImpl = ::testing::Types<MapDequeOrderBook, MapListOrderBook>;
 using MatchingImpl = ::testing::Types<MapDequeOrderBook, MapListOrderBook>;
+using MarketOrderImpl = ::testing::Types<MapDequeOrderBook, MapListOrderBook>;
 using TifImpl = ::testing::Types<MapDequeOrderBook, MapListOrderBook>;
-using CancelImpl = ::testing::Types<MapDequeOrderBook>;
 using ModifyImpl = ::testing::Types<MapDequeOrderBook>;
-using MarketOrderImpl = ::testing::Types<MapDequeOrderBook>;
+using CancelImpl = ::testing::Types<MapDequeOrderBook>;
 
 TYPED_TEST_SUITE(RestingTest, RestingImpl);
 TYPED_TEST_SUITE(MatchingTest, MatchingImpl);
-TYPED_TEST_SUITE(CancelTest, CancelImpl);
-TYPED_TEST_SUITE(ModifyTest, ModifyImpl);
-TYPED_TEST_SUITE(TifTest, TifImpl);
 TYPED_TEST_SUITE(MarketOrderTest, MarketOrderImpl);
+TYPED_TEST_SUITE(TifTest, TifImpl);
+TYPED_TEST_SUITE(ModifyTest, ModifyImpl);
+TYPED_TEST_SUITE(CancelTest, CancelImpl);
 
 // Run all suites on all implementations
 using FullImpl = ::testing::Types<MapDequeOrderBook, MapListOrderBook>;
 
 // TYPED_TEST_SUITE(RestingTest, FullImplementations);
 // TYPED_TEST_SUITE(MatchingTest, FullImplementations);
-// TYPED_TEST_SUITE(CancelTest, FullImplementations);
-// TYPED_TEST_SUITE(ModifyTest, FullImplementations);
-// TYPED_TEST_SUITE(TifTest, FullImplementations);
 // TYPED_TEST_SUITE(MarketOrderTest, FullImplementations);
+// TYPED_TEST_SUITE(TifTest, FullImplementations);
+// TYPED_TEST_SUITE(ModifyTest, FullImplementations);
+// TYPED_TEST_SUITE(CancelTest, FullImplementations);
 
 /*******************************************************************************
  * Resting Tests
@@ -202,6 +202,35 @@ TYPED_TEST(MatchingTest, FullyFilledRestingOrderIsRemoved) {
 }
 
 /*******************************************************************************
+ * Market Order Tests
+ ******************************************************************************/
+
+TYPED_TEST(MarketOrderTest, MarketOrderCrossesAnyPrice) {
+  this->book.addOrder(makeOrder(1, Side::Ask, 100, 3));
+  this->book.addOrder(makeOrder(2, Side::Ask, 200, 4));
+
+  auto trades = this->book.addOrder(
+      makeOrder(10, Side::Bid, 0, 5, OrderType::Market, TimeInForce::IOC));
+
+  ASSERT_EQ(trades.size(), 2u);
+  EXPECT_EQ(trades[0].price, 100);
+  EXPECT_EQ(trades[1].price, 200);
+  EXPECT_EQ(trades[1].qty, 2);
+}
+
+TYPED_TEST(MarketOrderTest, MarketOrderDoesNotRest) {
+  this->book.addOrder(makeOrder(1, Side::Ask, 100, 3));
+
+  auto trades = this->book.addOrder(
+      makeOrder(10, Side::Bid, 0, 10, OrderType::Market, TimeInForce::GTC));
+
+  ASSERT_EQ(trades.size(), 1u);
+  EXPECT_EQ(trades[0].qty, 3);
+  EXPECT_EQ(this->book.bestBid(), std::nullopt);
+  EXPECT_EQ(this->book.orderCount(), 0u);
+}
+
+/*******************************************************************************
  * Time In Force Tests
  ******************************************************************************/
 
@@ -255,32 +284,39 @@ TYPED_TEST(TifTest, FokRejectedWhenPriceDoesNotCrossEnoughLevels) {
 }
 
 /*******************************************************************************
- * Market Order Tests
+ * Modify Tests
  ******************************************************************************/
 
-TYPED_TEST(MarketOrderTest, MarketOrderCrossesAnyPrice) {
-  this->book.addOrder(makeOrder(1, Side::Ask, 100, 3));
-  this->book.addOrder(makeOrder(2, Side::Ask, 200, 4));
+TYPED_TEST(ModifyTest, ModifyDownReducesQtyAndPreservesPosition) {
+  this->book.addOrder(makeOrder(1, Side::Ask, 100, 10));
+  this->book.addOrder(makeOrder(2, Side::Ask, 100, 5));
 
-  auto trades = this->book.addOrder(
-      makeOrder(10, Side::Bid, 0, 5, OrderType::Market, TimeInForce::IOC));
+  EXPECT_EQ(this->book.qtyAt(Side::Ask, 100), 15);
+  EXPECT_TRUE(this->book.modifyOrder(1, 4));
+  EXPECT_EQ(this->book.qtyAt(Side::Ask, 100), 9);
 
-  ASSERT_EQ(trades.size(), 2u);
-  EXPECT_EQ(trades[0].price, 100);
-  EXPECT_EQ(trades[1].price, 200);
-  EXPECT_EQ(trades[1].qty, 2);
+  auto trades = this->book.addOrder(makeOrder(10, Side::Bid, 100, 4));
+  ASSERT_EQ(trades.size(), 1u);
+  EXPECT_EQ(trades[0].passiveId, 1u);
+  EXPECT_EQ(trades[0].qty, 4);
 }
 
-TYPED_TEST(MarketOrderTest, MarketOrderDoesNotRest) {
-  this->book.addOrder(makeOrder(1, Side::Ask, 100, 3));
+TYPED_TEST(ModifyTest, ModifyUpRejected) {
+  this->book.addOrder(makeOrder(1, Side::Bid, 100, 5));
 
-  auto trades = this->book.addOrder(
-      makeOrder(10, Side::Bid, 0, 10, OrderType::Market, TimeInForce::GTC));
+  EXPECT_FALSE(this->book.modifyOrder(1, 10));
+  EXPECT_EQ(this->book.qtyAt(Side::Bid, 100), 5);
+}
 
-  ASSERT_EQ(trades.size(), 1u);
-  EXPECT_EQ(trades[0].qty, 3);
-  EXPECT_EQ(this->book.bestBid(), std::nullopt);
-  EXPECT_EQ(this->book.orderCount(), 0u);
+TYPED_TEST(ModifyTest, ModifyToZeroRejected) {
+  this->book.addOrder(makeOrder(1, Side::Bid, 100, 5));
+
+  EXPECT_FALSE(this->book.modifyOrder(1, 0));
+  EXPECT_EQ(this->book.qtyAt(Side::Bid, 100), 5);
+}
+
+TYPED_TEST(ModifyTest, ModifyUnknownOrderReturnsFalse) {
+  EXPECT_FALSE(this->book.modifyOrder(42, 1));
 }
 
 /*******************************************************************************
@@ -315,42 +351,6 @@ TYPED_TEST(CancelTest, CancelTwiceReturnsFalseSecondTime) {
 
   EXPECT_TRUE(this->book.cancelOrder(1));
   EXPECT_FALSE(this->book.cancelOrder(1));
-}
-
-/*******************************************************************************
- * Modify Tests
- ******************************************************************************/
-
-TYPED_TEST(ModifyTest, ModifyDownReducesQtyAndPreservesPosition) {
-  this->book.addOrder(makeOrder(1, Side::Ask, 100, 10));
-  this->book.addOrder(makeOrder(2, Side::Ask, 100, 5));
-
-  EXPECT_EQ(this->book.qtyAt(Side::Ask, 100), 15);
-  EXPECT_TRUE(this->book.modifyOrder(1, 4));
-  EXPECT_EQ(this->book.qtyAt(Side::Ask, 100), 9);
-
-  auto trades = this->book.addOrder(makeOrder(10, Side::Bid, 100, 4));
-  ASSERT_EQ(trades.size(), 1u);
-  EXPECT_EQ(trades[0].passiveId, 1u);
-  EXPECT_EQ(trades[0].qty, 4);
-}
-
-TYPED_TEST(ModifyTest, ModifyUpRejected) {
-  this->book.addOrder(makeOrder(1, Side::Bid, 100, 5));
-
-  EXPECT_FALSE(this->book.modifyOrder(1, 10));
-  EXPECT_EQ(this->book.qtyAt(Side::Bid, 100), 5);
-}
-
-TYPED_TEST(ModifyTest, ModifyToZeroRejected) {
-  this->book.addOrder(makeOrder(1, Side::Bid, 100, 5));
-
-  EXPECT_FALSE(this->book.modifyOrder(1, 0));
-  EXPECT_EQ(this->book.qtyAt(Side::Bid, 100), 5);
-}
-
-TYPED_TEST(ModifyTest, ModifyUnknownOrderReturnsFalse) {
-  EXPECT_FALSE(this->book.modifyOrder(42, 1));
 }
 
 } // namespace
