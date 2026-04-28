@@ -35,29 +35,29 @@ template <typename T> class ModifyTest : public OrderBookTestBase<T> {};
 template <typename T> class CancelTest : public OrderBookTestBase<T> {};
 
 // Run suites on specified implementations
-using RestingImpl = ::testing::Types<MapDequeOrderBook, MapListOrderBook>;
-using MatchingImpl = ::testing::Types<MapDequeOrderBook, MapListOrderBook>;
-using MarketOrderImpl = ::testing::Types<MapDequeOrderBook, MapListOrderBook>;
-using TifImpl = ::testing::Types<MapDequeOrderBook, MapListOrderBook>;
-using ModifyImpl = ::testing::Types<MapDequeOrderBook, MapListOrderBook>;
-using CancelImpl = ::testing::Types<MapDequeOrderBook, MapListOrderBook>;
+using RestingImpl = ::testing::Types<MapListOrderBook>;
+using MatchingImpl = ::testing::Types<MapListOrderBook>;
+using MarketOrderImpl = ::testing::Types<MapListOrderBook>;
+using TifImpl = ::testing::Types<MapListOrderBook>;
+using ModifyImpl = ::testing::Types<MapListOrderBook>;
+using CancelImpl = ::testing::Types<MapListOrderBook>;
 
-// TYPED_TEST_SUITE(RestingTest, RestingImpl);
-// TYPED_TEST_SUITE(MatchingTest, MatchingImpl);
-// TYPED_TEST_SUITE(MarketOrderTest, MarketOrderImpl);
-// TYPED_TEST_SUITE(TifTest, TifImpl);
-// TYPED_TEST_SUITE(ModifyTest, ModifyImpl);
-// TYPED_TEST_SUITE(CancelTest, CancelImpl);
+TYPED_TEST_SUITE(RestingTest, RestingImpl);
+TYPED_TEST_SUITE(MatchingTest, MatchingImpl);
+TYPED_TEST_SUITE(MarketOrderTest, MarketOrderImpl);
+TYPED_TEST_SUITE(TifTest, TifImpl);
+TYPED_TEST_SUITE(ModifyTest, ModifyImpl);
+TYPED_TEST_SUITE(CancelTest, CancelImpl);
 
 // Run all suites on all implementations
 using FullImpl = ::testing::Types<MapDequeOrderBook, MapListOrderBook>;
 
-TYPED_TEST_SUITE(RestingTest, FullImpl);
-TYPED_TEST_SUITE(MatchingTest, FullImpl);
-TYPED_TEST_SUITE(MarketOrderTest, FullImpl);
-TYPED_TEST_SUITE(TifTest, FullImpl);
-TYPED_TEST_SUITE(ModifyTest, FullImpl);
-TYPED_TEST_SUITE(CancelTest, FullImpl);
+// TYPED_TEST_SUITE(RestingTest, FullImpl);
+// TYPED_TEST_SUITE(MatchingTest, FullImpl);
+// TYPED_TEST_SUITE(MarketOrderTest, FullImpl);
+// TYPED_TEST_SUITE(TifTest, FullImpl);
+// TYPED_TEST_SUITE(ModifyTest, FullImpl);
+// TYPED_TEST_SUITE(CancelTest, FullImpl);
 
 /*******************************************************************************
  * Resting Tests

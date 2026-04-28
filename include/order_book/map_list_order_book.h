@@ -27,17 +27,12 @@ public:
 private:
   struct LevelInfo {
     Quantity totalQty{0};
-    std::list<OrderId> queue;
-  };
-
-  struct OrderInfo {
-    Order order;
-    std::list<OrderId>::iterator orderIt;
+    std::list<Order> queue;
   };
 
   std::map<Price, LevelInfo> bids_;
   std::map<Price, LevelInfo> asks_;
-  std::unordered_map<OrderId, OrderInfo> orders_;
+  std::unordered_map<OrderId, std::list<Order>::iterator> orders_;
 
   void matchOrder(Order& order, Trades& trades);
 

@@ -37,20 +37,19 @@ Trades MapListOrderBook::addOrder(Order order) {
 }
 
 bool MapListOrderBook::modifyOrder(OrderId id, Quantity newQty) {
-  auto orderIt = orders_.find(id);
+  auto it = orders_.find(id);
 
-  if (orderIt == orders_.end()) {
+  if (it == orders_.end()) {
     return false;
   }
 
-  auto& orderInfo = orderIt->second;
-  auto& order = orderInfo.order;
-  if (newQty >= order.qty || newQty <= 0) {
+  auto& orderIt = it->second;
+  if (newQty >= orderIt->qty || newQty <= 0) {
     return false;
   }
 
-  auto& levels = (order.side == Side::Bid) ? bids_ : asks_;
-  auto levelIt = levels.find(order.price);
+  auto& levels = (orderIt->side == Side::Bid) ? bids_ : asks_;
+  auto levelIt = levels.find(orderIt->price);
 
   if (levelIt == levels.end()) {
     return false;
@@ -58,39 +57,37 @@ bool MapListOrderBook::modifyOrder(OrderId id, Quantity newQty) {
 
   auto& level = levelIt->second;
 
-  level.totalQty += newQty - order.qty;
-  order.qty = newQty;
+  level.totalQty += newQty - orderIt->qty;
+  orderIt->qty = newQty;
 
   return true;
 }
 
 bool MapListOrderBook::cancelOrder(OrderId id) {
-  auto orderIt = orders_.find(id);
+  auto it = orders_.find(id);
 
-  if (orderIt == orders_.end()) {
+  if (it == orders_.end()) {
     return false;
   }
 
-  auto& orderInfo = orderIt->second;
-  const auto& order = orderInfo.order;
+  auto& orderIt = it->second;
 
-  auto& levels = (order.side == Side::Bid) ? bids_ : asks_;
-
-  auto levelIt = levels.find(order.price);
+  auto& levels = (orderIt->side == Side::Bid) ? bids_ : asks_;
+  auto levelIt = levels.find(orderIt->price);
   if (levelIt == levels.end()) {
     return false;
   }
 
   auto& level = levelIt->second;
 
-  level.queue.erase(orderInfo.orderIt);
-  level.totalQty -= order.qty;
+  level.totalQty -= orderIt->qty;
+  level.queue.erase(orderIt);
 
   if (level.queue.empty()) {
     levels.erase(levelIt);
   }
 
-  orders_.erase(orderIt);
+  orders_.erase(it);
 
   return true;
 }
@@ -145,9 +142,7 @@ void MapListOrderBook::matchOrder(Order& order, Trades& trades) {
     auto& queue = levelIt->second.queue;
 
     while (order.qty > 0 && !queue.empty()) {
-      auto restingIt = orders_.find(queue.front());
-      auto& orderInfo = restingIt->second;
-      auto& restingOrder = orderInfo.order;
+      auto& restingOrder = queue.front();
 
       Quantity filledQty = std::min(order.qty, restingOrder.qty);
 
@@ -161,8 +156,8 @@ void MapListOrderBook::matchOrder(Order& order, Trades& trades) {
                         .qty = filledQty});
 
       if (restingOrder.qty == 0) {
+        orders_.erase(restingOrder.id);
         queue.pop_front();
-        orders_.erase(restingIt);
       }
     }
 
@@ -189,10 +184,10 @@ void MapListOrderBook::insertResting(const Order& order) {
   auto& level = levels[order.price];
 
   level.totalQty += order.qty;
-  level.queue.push_back(order.id);
+  level.queue.push_back(order);
   auto orderIt = std::prev(level.queue.end());
 
-  orders_[order.id] = {.order = order, .orderIt = orderIt};
+  orders_[order.id] = orderIt;
 }
 
 bool MapListOrderBook::canFullyFill(const Order& order) const {
