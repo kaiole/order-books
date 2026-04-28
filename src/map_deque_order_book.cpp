@@ -114,11 +114,13 @@ std::optional<std::pair<Price, Quantity>> MapDequeOrderBook::bestAsk() const {
 
 Quantity MapDequeOrderBook::qtyAt(Side side, Price price) const {
   const auto& levels = (side == Side::Bid) ? bids_ : asks_;
-  if (const auto& levelIt = levels.find(price); levelIt != levels.end()) {
-    return levelIt->second.totalQty;
+  const auto levelIt = levels.find(price);
+
+  if (levelIt == levels.end()) {
+    return 0;
   }
 
-  return 0;
+  return levelIt->second.totalQty;
 }
 
 std::size_t MapDequeOrderBook::depth(Side side) const {
