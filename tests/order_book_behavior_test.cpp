@@ -42,22 +42,22 @@ using TifImpl = ::testing::Types<MapListOrderBook>;
 using ModifyImpl = ::testing::Types<MapListOrderBook>;
 using CancelImpl = ::testing::Types<MapListOrderBook>;
 
-TYPED_TEST_SUITE(RestingTest, RestingImpl);
-TYPED_TEST_SUITE(MatchingTest, MatchingImpl);
-TYPED_TEST_SUITE(MarketOrderTest, MarketOrderImpl);
-TYPED_TEST_SUITE(TifTest, TifImpl);
-TYPED_TEST_SUITE(ModifyTest, ModifyImpl);
-TYPED_TEST_SUITE(CancelTest, CancelImpl);
+// TYPED_TEST_SUITE(RestingTest, RestingImpl);
+// TYPED_TEST_SUITE(MatchingTest, MatchingImpl);
+// TYPED_TEST_SUITE(MarketOrderTest, MarketOrderImpl);
+// TYPED_TEST_SUITE(TifTest, TifImpl);
+// TYPED_TEST_SUITE(ModifyTest, ModifyImpl);
+// TYPED_TEST_SUITE(CancelTest, CancelImpl);
 
 // Run all suites on all implementations
 using FullImpl = ::testing::Types<MapDequeOrderBook, MapListOrderBook>;
 
-// TYPED_TEST_SUITE(RestingTest, FullImpl);
-// TYPED_TEST_SUITE(MatchingTest, FullImpl);
-// TYPED_TEST_SUITE(MarketOrderTest, FullImpl);
-// TYPED_TEST_SUITE(TifTest, FullImpl);
-// TYPED_TEST_SUITE(ModifyTest, FullImpl);
-// TYPED_TEST_SUITE(CancelTest, FullImpl);
+TYPED_TEST_SUITE(RestingTest, FullImpl);
+TYPED_TEST_SUITE(MatchingTest, FullImpl);
+TYPED_TEST_SUITE(MarketOrderTest, FullImpl);
+TYPED_TEST_SUITE(TifTest, FullImpl);
+TYPED_TEST_SUITE(ModifyTest, FullImpl);
+TYPED_TEST_SUITE(CancelTest, FullImpl);
 
 /*******************************************************************************
  * Resting Tests
