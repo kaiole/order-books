@@ -4,16 +4,16 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <optional>
 #include <vector>
 
 enum class Operation : std::int8_t { Add = 0, Modify = 1, Cancel = 2 };
 
 struct Event {
   Operation op;
-  std::optional<OrderId> id;
-  std::optional<Quantity> newQty;
-  std::optional<Order> order;
+  OrderId id;
+  Quantity qty;
+  Side side;
+  Price price;
 };
 
 using Events = std::vector<Event>;

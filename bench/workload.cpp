@@ -3,7 +3,7 @@
 #include "order_book/types.h"
 
 #include <cstddef>
-#include <optional>
+#include <cstdint>
 #include <random>
 #include <vector>
 
@@ -31,8 +31,8 @@ void generateWorkload(Events& events, std::size_t size, std::uint64_t seed) {
 
   std::vector<OrderInfo> liveOrders;
   liveOrders.reserve(size);
-  OrderId curId = 0;
 
+  OrderId curId = 0;
   std::mt19937_64 rng{seed};
 
   auto getLiveIdx = [&]() {
@@ -42,10 +42,13 @@ void generateWorkload(Events& events, std::size_t size, std::uint64_t seed) {
   };
 
   auto cancelOrder = [&](std::size_t idx) {
-    events.push_back({.op = Operation::Cancel,
-                      .id = liveOrders[idx].id,
-                      .newQty = std::nullopt,
-                      .order = std::nullopt});
+    events.push_back(Event{
+        .op = Operation::Cancel,
+        .id = liveOrders[idx].id,
+        .qty = Quantity{},
+        .side = Side{},
+        .price = Price{},
+    });
 
     liveOrders[idx] = liveOrders.back();
     liveOrders.pop_back();
@@ -66,34 +69,34 @@ void generateWorkload(Events& events, std::size_t size, std::uint64_t seed) {
 
     switch (op) {
     case Operation::Add: {
-      OrderId id = ++curId;
-      Side side = sideDist(rng) ? Side::Bid : Side::Ask;
-      Price price = side == Side::Bid ? midPrice - offsetDist(rng)
-                                      : midPrice + offsetDist(rng);
-      Quantity qty = qtyDist(rng);
+      const OrderId id = ++curId;
+      const Side side = sideDist(rng) ? Side::Bid : Side::Ask;
+      const Price price = side == Side::Bid ? midPrice - offsetDist(rng)
+                                            : midPrice + offsetDist(rng);
+      const Quantity qty = qtyDist(rng);
 
-      Order order = {.id = id,
-                     .side = side,
-                     .type = OrderType::Limit,
-                     .tif = TimeInForce::GTC,
-                     .price = price,
-                     .qty = qty};
+      events.push_back(Event{
+          .op = Operation::Add,
+          .id = id,
+          .qty = qty,
+          .side = side,
+          .price = price,
+      });
 
-      events.push_back({.op = Operation::Add,
-                        .id = std::nullopt,
-                        .newQty = std::nullopt,
-                        .order = order});
-
-      liveOrders.push_back({.id = id, .qty = qty});
+      liveOrders.push_back(OrderInfo{
+          .id = id,
+          .qty = qty,
+      });
 
       break;
     }
+
     case Operation::Modify: {
-      auto idx = getLiveIdx();
+      const auto idx = getLiveIdx();
       OrderInfo& orderInfo = liveOrders[idx];
 
-      // Modify can only decrease quantity while remaining > 0
-      // If quantity is 1 there is no valid reduction, so cancel instead
+      // Modify can only decrease quantity while remaining > 0.
+      // If quantity is 1, there is no valid reduction, so cancel instead.
       if (orderInfo.qty == 1) {
         cancelOrder(idx);
         break;
@@ -101,23 +104,24 @@ void generateWorkload(Events& events, std::size_t size, std::uint64_t seed) {
 
       std::uniform_int_distribution<Quantity> newQtyDist{minQty,
                                                          orderInfo.qty - 1};
+      const Quantity newQty = newQtyDist(rng);
 
-      Quantity newQty = newQtyDist(rng);
-
-      events.push_back({.op = Operation::Modify,
-                        .id = orderInfo.id,
-                        .newQty = newQty,
-                        .order = std::nullopt});
+      events.push_back(Event{
+          .op = Operation::Modify,
+          .id = orderInfo.id,
+          .qty = newQty,
+          .side = Side{},
+          .price = Price{},
+      });
 
       orderInfo.qty = newQty;
 
       break;
     }
+
     case Operation::Cancel: {
-      auto idx = getLiveIdx();
-
+      const auto idx = getLiveIdx();
       cancelOrder(idx);
-
       break;
     }
     }
