@@ -47,7 +47,7 @@ bool MapListOrderBook::modifyOrder(OrderId id, Quantity newQty) {
     return false;
   }
 
-  auto& levels = (orderIt->side == Side::Bid) ? bids_ : asks_;
+  auto& levels = orderIt->side == Side::Bid ? bids_ : asks_;
   auto levelIt = levels.find(orderIt->price);
 
   if (levelIt == levels.end()) {
@@ -71,7 +71,7 @@ bool MapListOrderBook::cancelOrder(OrderId id) {
 
   auto& orderIt = it->second;
 
-  auto& levels = (orderIt->side == Side::Bid) ? bids_ : asks_;
+  auto& levels = orderIt->side == Side::Bid ? bids_ : asks_;
   auto levelIt = levels.find(orderIt->price);
   if (levelIt == levels.end()) {
     return false;
@@ -110,7 +110,7 @@ std::optional<std::pair<Price, Quantity>> MapListOrderBook::bestAsk() const {
 }
 
 Quantity MapListOrderBook::qtyAt(Side side, Price price) const {
-  const auto& levels = (side == Side::Bid) ? bids_ : asks_;
+  const auto& levels = side == Side::Bid ? bids_ : asks_;
   const auto levelIt = levels.find(price);
 
   if (levelIt == levels.end()) {
@@ -121,17 +121,17 @@ Quantity MapListOrderBook::qtyAt(Side side, Price price) const {
 }
 
 std::size_t MapListOrderBook::depth(Side side) const {
-  return (side == Side::Bid) ? bids_.size() : asks_.size();
+  return side == Side::Bid ? bids_.size() : asks_.size();
 }
 
 std::size_t MapListOrderBook::orderCount() const { return orders_.size(); }
 
 void MapListOrderBook::matchOrder(Order& order, Trades& trades) {
-  auto& levels = (order.side == Side::Bid) ? asks_ : bids_;
+  auto& levels = order.side == Side::Bid ? asks_ : bids_;
 
   while (order.qty > 0 && !levels.empty()) {
     auto levelIt =
-        (order.side == Side::Bid) ? levels.begin() : std::prev(levels.end());
+        order.side == Side::Bid ? levels.begin() : std::prev(levels.end());
     const Price restingPrice = levelIt->first;
 
     if (!canCross(order, restingPrice)) {
@@ -180,7 +180,7 @@ bool MapListOrderBook::canCross(const Order& order, Price restingPrice) const {
 }
 
 void MapListOrderBook::insertResting(const Order& order) {
-  auto& levels = (order.side == Side::Bid) ? bids_ : asks_;
+  auto& levels = order.side == Side::Bid ? bids_ : asks_;
   auto levelIt = levels.try_emplace(order.price).first;
   auto& level = levelIt->second;
 
