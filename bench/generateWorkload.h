@@ -16,6 +16,6 @@ struct Event {
   Price price;
 };
 
-using EventLog = std::vector<Event>;
+using Workload = std::vector<Event>;
 
-void generateWorkload(EventLog& eventLog, std::size_t size, std::uint64_t seed);
+Workload generateWorkload(std::size_t size, std::uint64_t seed);

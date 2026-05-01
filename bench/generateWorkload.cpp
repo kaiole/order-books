@@ -1,4 +1,4 @@
-#include "workload.h"
+#include "generateWorkload.h"
 
 #include "order_book/types.h"
 
@@ -25,10 +25,9 @@ struct OrderInfo {
 
 } // namespace
 
-void generateWorkload(EventLog& eventLog, std::size_t size,
-                      std::uint64_t seed) {
-  eventLog.clear();
-  eventLog.reserve(size);
+Workload generateWorkload(std::size_t size, std::uint64_t seed) {
+  Workload workload;
+  workload.reserve(size);
 
   std::vector<OrderInfo> liveOrders;
   liveOrders.reserve(size);
@@ -43,7 +42,7 @@ void generateWorkload(EventLog& eventLog, std::size_t size,
   };
 
   auto cancelOrder = [&](std::size_t idx) {
-    eventLog.push_back(Event{
+    workload.push_back(Event{
         .op = Operation::Cancel,
         .id = liveOrders[idx].id,
         .qty = Quantity{},
@@ -76,7 +75,7 @@ void generateWorkload(EventLog& eventLog, std::size_t size,
                                             : midPrice + offsetDist(rng);
       const Quantity qty = qtyDist(rng);
 
-      eventLog.push_back(Event{
+      workload.push_back(Event{
           .op = Operation::Add,
           .id = id,
           .qty = qty,
@@ -96,8 +95,6 @@ void generateWorkload(EventLog& eventLog, std::size_t size,
       const auto idx = getLiveIdx();
       OrderInfo& orderInfo = liveOrders[idx];
 
-      // Modify can only decrease quantity while remaining > 0.
-      // If quantity is 1, there is no valid reduction, so cancel instead.
       if (orderInfo.qty == 1) {
         cancelOrder(idx);
         break;
@@ -107,7 +104,7 @@ void generateWorkload(EventLog& eventLog, std::size_t size,
                                                          orderInfo.qty - 1};
       const Quantity newQty = newQtyDist(rng);
 
-      eventLog.push_back(Event{
+      workload.push_back(Event{
           .op = Operation::Modify,
           .id = orderInfo.id,
           .qty = newQty,
@@ -127,4 +124,6 @@ void generateWorkload(EventLog& eventLog, std::size_t size,
     }
     }
   }
+
+  return workload;
 }
