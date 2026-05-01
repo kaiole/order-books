@@ -15,8 +15,8 @@ constexpr Quantity minQty = 1;
 constexpr Quantity maxQty = 100;
 
 constexpr int addWeight = 50;
-constexpr int modifyWeight = 20;
-constexpr int cancelWeight = 30;
+constexpr int modifyWeight = 25;
+constexpr int cancelWeight = 25;
 
 struct OrderInfo {
   OrderId id;
@@ -25,9 +25,10 @@ struct OrderInfo {
 
 } // namespace
 
-void generateWorkload(Events& events, std::size_t size, std::uint64_t seed) {
-  events.clear();
-  events.reserve(size);
+void generateWorkload(EventLog& eventLog, std::size_t size,
+                      std::uint64_t seed) {
+  eventLog.clear();
+  eventLog.reserve(size);
 
   std::vector<OrderInfo> liveOrders;
   liveOrders.reserve(size);
@@ -42,7 +43,7 @@ void generateWorkload(Events& events, std::size_t size, std::uint64_t seed) {
   };
 
   auto cancelOrder = [&](std::size_t idx) {
-    events.push_back(Event{
+    eventLog.push_back(Event{
         .op = Operation::Cancel,
         .id = liveOrders[idx].id,
         .qty = Quantity{},
@@ -75,7 +76,7 @@ void generateWorkload(Events& events, std::size_t size, std::uint64_t seed) {
                                             : midPrice + offsetDist(rng);
       const Quantity qty = qtyDist(rng);
 
-      events.push_back(Event{
+      eventLog.push_back(Event{
           .op = Operation::Add,
           .id = id,
           .qty = qty,
@@ -106,7 +107,7 @@ void generateWorkload(Events& events, std::size_t size, std::uint64_t seed) {
                                                          orderInfo.qty - 1};
       const Quantity newQty = newQtyDist(rng);
 
-      events.push_back(Event{
+      eventLog.push_back(Event{
           .op = Operation::Modify,
           .id = orderInfo.id,
           .qty = newQty,

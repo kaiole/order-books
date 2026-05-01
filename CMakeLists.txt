@@ -15,7 +15,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 option(ORDER_BOOKS_BUILD_TESTS "Build tests" ON)
-option(ORDER_BOOKS_BUILD_BENCH "Build benchmarks" OFF)
+option(ORDER_BOOKS_BUILD_BENCH "Build benchmarks" ON)
 
 file(GLOB_RECURSE LIB_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 
