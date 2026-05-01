@@ -1,16 +1,21 @@
 #pragma once
 
+#include "generateWorkload.h"
 #include "order_book/order_book.h"
-#include "workload.h"
+#include "order_book/types.h"
+
+#include <span>
 
 template <OrderBookLike Book>
-void runWorkload(Book& book, const Event* events, std::size_t count) {
+void runWorkload(Book& book, std::span<const Event> workload,
+                 std::size_t count) {
   for (std::size_t i = 0; i < count; ++i) {
-    const Event& event = events[i];
+    const Event& event = workload[i];
+
     switch (event.op) {
     case Operation::Add: {
-      book.addOrder({event.id, event.side, OrderType::Limit, TimeInForce::GTC,
-                     event.price, event.qty});
+      book.addOrder(Order{event.id, event.side, OrderType::Limit,
+                          TimeInForce::GTC, event.price, event.qty});
       break;
     }
 
