@@ -150,10 +150,10 @@ void MapListOrderBook::matchOrder(Order& order, Trades& trades) {
       restingOrder.qty -= filledQty;
       level.totalQty -= filledQty;
 
-      trades.push_back({.aggressorId = order.id,
-                        .passiveId = restingOrder.id,
-                        .price = restingOrder.price,
-                        .qty = filledQty});
+      trades.push_back(Trade{.aggressorId = order.id,
+                             .passiveId = restingOrder.id,
+                             .price = restingOrder.price,
+                             .qty = filledQty});
 
       if (restingOrder.qty == 0) {
         orders_.erase(restingOrder.id);
