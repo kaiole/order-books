@@ -25,7 +25,9 @@ target_include_directories(
   ${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                          $<INSTALL_INTERFACE:include>)
 
-target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+target_compile_options(
+  ${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic $<$<CONFIG:Release>:-O3
+                          -march=native -DNDEBUG>)
 
 if(ORDER_BOOKS_BUILD_TESTS)
   enable_testing()
