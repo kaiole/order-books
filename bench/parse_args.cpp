@@ -85,9 +85,5 @@ Args parseArgs(int argc, char** argv) {
     }
   }
 
-  if (args.warmupSize >= args.workloadSize) {
-    throw std::invalid_argument("--warmup must be smaller than --size");
-  }
-
   return args;
 }

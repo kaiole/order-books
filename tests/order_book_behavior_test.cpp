@@ -22,17 +22,29 @@ Order makeOrder(OrderId id, Side side, Price price, Quantity qty,
 static_assert(OrderBookLike<MapDequeOrderBook>);
 static_assert(OrderBookLike<MapListOrderBook>);
 
-template <typename T> class OrderBookTestBase : public ::testing::Test {
+template <typename T>
+class OrderBookTestBase : public ::testing::Test {
 protected:
   T book;
 };
 
-template <typename T> class RestingTest : public OrderBookTestBase<T> {};
-template <typename T> class MatchingTest : public OrderBookTestBase<T> {};
-template <typename T> class MarketOrderTest : public OrderBookTestBase<T> {};
-template <typename T> class TifTest : public OrderBookTestBase<T> {};
-template <typename T> class ModifyTest : public OrderBookTestBase<T> {};
-template <typename T> class CancelTest : public OrderBookTestBase<T> {};
+template <typename T>
+class RestingTest : public OrderBookTestBase<T> {};
+
+template <typename T>
+class MatchingTest : public OrderBookTestBase<T> {};
+
+template <typename T>
+class MarketOrderTest : public OrderBookTestBase<T> {};
+
+template <typename T>
+class TifTest : public OrderBookTestBase<T> {};
+
+template <typename T>
+class ModifyTest : public OrderBookTestBase<T> {};
+
+template <typename T>
+class CancelTest : public OrderBookTestBase<T> {};
 
 // Run suites on specified implementations
 using RestingImpl = ::testing::Types<MapListOrderBook>;
