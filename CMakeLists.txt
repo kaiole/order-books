@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(
-  order-books
+  order_books
   VERSION 0.0.0
   DESCRIPTION "Benchmarks for order book implementations"
   LANGUAGES CXX)
