@@ -10,10 +10,13 @@ int main(int argc, char** argv) {
   try {
     BenchConf benchConf = parseArgs(argc, argv);
 
-    if (benchConf.impl == Impl::MapDeque) {
+    switch (benchConf.impl) {
+    case Impl::MapDeque:
       runBenchmark<MapDequeOrderBook>(benchConf);
-    } else {
+      break;
+    case Impl::MapList:
       runBenchmark<MapListOrderBook>(benchConf);
+      break;
     }
   } catch (const std::exception& err) {
     std::cerr << "error: " << err.what() << "\n";

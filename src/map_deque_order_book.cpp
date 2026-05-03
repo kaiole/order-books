@@ -145,7 +145,8 @@ void MapDequeOrderBook::matchOrder(Order& order, Trades& trades) {
       break;
     }
 
-    auto& queue = levelIt->second.queue;
+    auto& level = levelIt->second;
+    auto& queue = level.queue;
 
     while (order.qty > 0 && !queue.empty()) {
       auto restingIt = orders_.find(queue.front());
@@ -155,7 +156,7 @@ void MapDequeOrderBook::matchOrder(Order& order, Trades& trades) {
 
       order.qty -= filledQty;
       restingOrder.qty -= filledQty;
-      levelIt->second.totalQty -= filledQty;
+      level.totalQty -= filledQty;
 
       trades.push_back(Trade{.aggressorId = order.id,
                              .passiveId = restingOrder.id,

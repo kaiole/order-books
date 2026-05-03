@@ -14,8 +14,8 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-option(ORDER_BOOKS_BUILD_TESTS "Build tests" ON)
-option(ORDER_BOOKS_BUILD_BENCH "Build benchmarks" ON)
+option(BUILD_TESTS "Build tests" OFF)
+option(BUILD_BENCH "Build benchmarks" OFF)
 
 file(GLOB_RECURSE LIB_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 
@@ -29,11 +29,11 @@ target_compile_options(
   ${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic $<$<CONFIG:Release>:-O3
                           -march=native -DNDEBUG>)
 
-if(ORDER_BOOKS_BUILD_TESTS)
+if(BUILD_TESTS)
   enable_testing()
   add_subdirectory(tests)
 endif()
 
-if(ORDER_BOOKS_BUILD_BENCH)
+if(BUILD_BENCH)
   add_subdirectory(bench)
 endif()
