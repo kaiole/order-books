@@ -1,4 +1,4 @@
-#include "generateWorkload.h"
+#include "generate_workload.h"
 
 #include "order_book/types.h"
 
@@ -10,13 +10,13 @@
 namespace {
 
 constexpr Price midPrice = 10000;
-constexpr Price priceOffset = 50;
+constexpr Price maxPriceOffset = 50;
 constexpr Quantity minQty = 1;
 constexpr Quantity maxQty = 100;
 
-constexpr int addWeight = 50;
-constexpr int modifyWeight = 25;
-constexpr int cancelWeight = 25;
+constexpr int addOrderWeight = 50;
+constexpr int modifyOrderWeight = 25;
+constexpr int cancelOrderWeight = 25;
 
 struct OrderInfo {
   OrderId id;
@@ -54,10 +54,11 @@ Workload generateWorkload(std::size_t size, std::uint64_t seed) {
     liveOrders.pop_back();
   };
 
-  std::discrete_distribution<int> opDist{addWeight, modifyWeight, cancelWeight};
+  std::discrete_distribution<int> opDist{addOrderWeight, modifyOrderWeight,
+                                         cancelOrderWeight};
 
   std::bernoulli_distribution sideDist{0.5};
-  std::uniform_int_distribution<Price> offsetDist{1, priceOffset};
+  std::uniform_int_distribution<Price> offsetDist{1, maxPriceOffset};
   std::uniform_int_distribution<Quantity> qtyDist{minQty, maxQty};
 
   for (std::size_t i{}; i < size; ++i) {

@@ -57,8 +57,8 @@ Impl parseImpl(std::string_view value) {
 
 } // namespace
 
-Args parseArgs(int argc, char** argv) {
-  Args args;
+BenchConf parseArgs(int argc, char** argv) {
+  BenchConf args;
 
   for (int i = 1; i < argc; ++i) {
     std::string_view token = argv[i];

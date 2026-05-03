@@ -1,4 +1,4 @@
-#include "runPerf.h"
+#include "run_perf.h"
 
 #include "parse_args.h"
 
@@ -9,7 +9,7 @@
 
 namespace {
 
-std::string getFileName(Impl impl) {
+std::string getPerfOutputPath(Impl impl) {
   std::string fileName;
 
   switch (impl) {
@@ -29,11 +29,11 @@ std::string getFileName(Impl impl) {
 void runPerf(Impl impl) {
   pid_t pid = fork();
   if (pid == 0) {
-    const std::string fileName = getFileName(impl);
+    const std::string perfOutputPath = getPerfOutputPath(impl);
     const auto parentPid = std::to_string(getppid());
 
     execlp("perf", "perf", "record", "-F", "4000", "--call-graph", "fp", "-p",
-           parentPid.c_str(), "-o", fileName.c_str(),
+           parentPid.c_str(), "-o", perfOutputPath.c_str(),
            static_cast<char*>(nullptr));
 
     std::perror("execlp");

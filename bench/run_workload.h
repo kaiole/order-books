@@ -1,6 +1,6 @@
 #pragma once
 
-#include "generateWorkload.h"
+#include "generate_workload.h"
 #include "order_book/order_book.h"
 #include "order_book/types.h"
 
