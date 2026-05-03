@@ -14,10 +14,10 @@ std::string getPerfOutputPath(Impl impl) {
 
   switch (impl) {
   case Impl::MapDeque:
-    fileName = "./tmp/map_deque.perf";
+    fileName = "./perf/samples/map_deque.perf";
     break;
   case Impl::MapList:
-    fileName = "./tmp/map_list.perf";
+    fileName = "./perf/samples/map_list.perf";
     break;
   }
 
