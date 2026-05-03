@@ -4,6 +4,7 @@
 #include "order_book/order_book.h"
 #include "parse_args.h"
 #include "runWorkload.h"
+#include "runPerf.h"
 
 #include <span>
 
@@ -18,8 +19,8 @@ void benchImpl(const Args& args) {
   auto benchWorkload = workload.subspan(args.warmupSize);
 
   Book book;
-  // runWorkload(book, warmupWorkload);
-  runWorkload(book, benchWorkload);
 
-  // TODO: fork() generation/ warmup phase or find way to isolate it from perf
+  runWorkload(book, warmupWorkload);
+  runPerf(args.impl);
+  runWorkload(book, benchWorkload);
 }
