@@ -1,8 +1,8 @@
 #pragma once
 
-#include "generate_workload.h"
 #include "order_book/order_book.h"
 #include "order_book/types.h"
+#include "types.h"
 
 #include <span>
 

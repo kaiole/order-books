@@ -1,7 +1,5 @@
 #include "run_perf.h"
 
-#include "parse_args.h"
-
 #include <cstdio>
 #include <string>
 #include <sys/types.h>

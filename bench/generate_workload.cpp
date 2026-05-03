@@ -1,6 +1,6 @@
 #include "generate_workload.h"
 
-#include "order_book/types.h"
+#include "types.h"
 
 #include <cstddef>
 #include <cstdint>

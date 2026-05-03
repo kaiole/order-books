@@ -2,9 +2,9 @@
 
 #include "generate_workload.h"
 #include "order_book/order_book.h"
-#include "parse_args.h"
 #include "run_perf.h"
 #include "run_workload.h"
+#include "types.h"
 
 #include <span>
 
