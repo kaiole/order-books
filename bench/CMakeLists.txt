@@ -12,6 +12,9 @@ file(GLOB_RECURSE BENCH_SOURCES CONFIGURE_DEPENDS "*.cpp")
 
 add_executable(${PROJECT_NAME}_bench ${BENCH_SOURCES})
 
+target_include_directories(${PROJECT_NAME}_bench
+                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
 target_link_libraries(${PROJECT_NAME}_bench PRIVATE ${PROJECT_NAME}
                                                     benchmark::benchmark)
 

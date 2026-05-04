@@ -1,8 +1,7 @@
 #pragma once
 
-#include "generate_workload.h"
+#include "workload/generate_workload.h"
 #include "order_book/order_book.h"
-#include "run_perf.h"
 #include "run_workload.h"
 #include "types.h"
 
@@ -21,6 +20,5 @@ void runBenchmark(const BenchConf& benchConf) {
   Book book;
 
   runWorkload(book, warmupWorkload);
-  runPerf(benchConf.impl);
   runWorkload(book, benchWorkload);
 }
