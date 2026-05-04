@@ -1,8 +1,19 @@
+include(FetchContent)
+
+FetchContent_Declare(
+  googlebenchmark
+  GIT_REPOSITORY https://github.com/google/benchmark.git
+  GIT_TAG v1.9.1)
+
+set(BENCHMARK_ENABLE_TESTING OFF)
+FetchContent_MakeAvailable(googlebenchmark)
+
 file(GLOB_RECURSE BENCH_SOURCES CONFIGURE_DEPENDS "*.cpp")
 
 add_executable(${PROJECT_NAME}_bench ${BENCH_SOURCES})
 
-target_link_libraries(${PROJECT_NAME}_bench PRIVATE ${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME}_bench PRIVATE ${PROJECT_NAME}
+                                                    benchmark::benchmark)
 
 target_compile_options(
   ${PROJECT_NAME}_bench
