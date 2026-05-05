@@ -190,7 +190,6 @@ bool MapDequeOrderBook::canCross(const Order& order, Price restingPrice) const {
 void MapDequeOrderBook::insertResting(const Order& order) {
   auto& levels = order.side == Side::Bid ? bids_ : asks_;
   auto levelIt = levels.try_emplace(order.price).first;
-
   auto& level = levelIt->second;
 
   level.queue.push_back(order.id);

@@ -8,23 +8,65 @@ FetchContent_Declare(
 set(BENCHMARK_ENABLE_TESTING OFF)
 FetchContent_MakeAvailable(googlebenchmark)
 
-file(GLOB_RECURSE BENCH_SOURCES CONFIGURE_DEPENDS "*.cpp")
+execute_process(
+  COMMAND git rev-parse --short=12 HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE BENCH_GIT_COMMIT
+  OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+if(NOT BENCH_GIT_COMMIT)
+  set(BENCH_GIT_COMMIT "unknown")
+endif()
 
-add_executable(${PROJECT_NAME}_bench ${BENCH_SOURCES})
+set(BENCH_COMMON_SOURCES workload/event_generator.cpp output/run_metadata.cpp
+                         runner/run_perf.cpp harness/parse_args.cpp)
 
-target_include_directories(${PROJECT_NAME}_bench
-                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(${PROJECT_NAME}_bench_common STATIC ${BENCH_COMMON_SOURCES})
 
-target_link_libraries(${PROJECT_NAME}_bench PRIVATE ${PROJECT_NAME}
-                                                    benchmark::benchmark)
+target_include_directories(${PROJECT_NAME}_bench_common
+                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_compile_options(
-  ${PROJECT_NAME}_bench
-  PRIVATE -Wall
-          -Wextra
-          -Wpedantic
-          -O3
-          -g
-          -DNDEBUG
-          -march=native
-          -fno-omit-frame-pointer)
+target_link_libraries(${PROJECT_NAME}_bench_common PUBLIC ${PROJECT_NAME}
+                                                          benchmark::benchmark)
+
+set(BENCH_COMPILE_OPTIONS
+    -Wall
+    -Wextra
+    -Wpedantic
+    -O3
+    -g
+    -DNDEBUG
+    -march=native
+    -fno-omit-frame-pointer)
+
+set(BENCH_BUILD_FLAGS_STRING "")
+foreach(opt ${BENCH_COMPILE_OPTIONS})
+  set(BENCH_BUILD_FLAGS_STRING "${BENCH_BUILD_FLAGS_STRING} ${opt}")
+endforeach()
+string(STRIP "${BENCH_BUILD_FLAGS_STRING}" BENCH_BUILD_FLAGS_STRING)
+
+target_compile_options(${PROJECT_NAME}_bench_common
+                       PUBLIC ${BENCH_COMPILE_OPTIONS})
+
+target_compile_definitions(
+  ${PROJECT_NAME}_bench_common
+  PUBLIC BENCH_GIT_COMMIT="${BENCH_GIT_COMMIT}"
+         BENCH_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
+         BENCH_BUILD_FLAGS="${BENCH_BUILD_FLAGS_STRING}")
+
+add_executable(${PROJECT_NAME}_bench harness/main.cpp)
+target_link_libraries(${PROJECT_NAME}_bench
+                      PRIVATE ${PROJECT_NAME}_bench_common)
+
+add_executable(${PROJECT_NAME}_gbench harness/gbench_main.cpp)
+target_link_libraries(${PROJECT_NAME}_gbench
+                      PRIVATE ${PROJECT_NAME}_bench_common)
+
+add_executable(${PROJECT_NAME}_determinism_smoke harness/determinism_smoke.cpp)
+target_link_libraries(${PROJECT_NAME}_determinism_smoke
+                      PRIVATE ${PROJECT_NAME}_bench_common)
+
+add_test(NAME bench_determinism COMMAND ${PROJECT_NAME}_determinism_smoke)
+add_test(NAME bench_gbench_smoke
+         COMMAND ${PROJECT_NAME}_gbench --benchmark_min_time=1x
+                 --benchmark_repetitions=1)
+set_tests_properties(bench_gbench_smoke PROPERTIES TIMEOUT 60)
