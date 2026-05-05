@@ -9,18 +9,19 @@
 
 int main(int argc, char** argv) {
   try {
-    BenchConf benchConf = parseArgs(argc, argv);
+    BenchConfig config = parseArgs(argc, argv);
 
-    switch (benchConf.impl) {
+    switch (config.impl) {
     case Impl::MapDeque:
-      runBenchmark<MapDequeOrderBook>(benchConf);
+      runBenchmark<MapDequeOrderBook>(config);
       break;
     case Impl::MapList:
-      runBenchmark<MapListOrderBook>(benchConf);
+      runBenchmark<MapListOrderBook>(config);
       break;
     }
   } catch (const std::exception& err) {
     std::cerr << "error: " << err.what() << "\n";
+    return 1;
   }
 
   return 0;

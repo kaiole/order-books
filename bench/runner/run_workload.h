@@ -4,6 +4,7 @@
 #include "order_book/types.h"
 #include "types.h"
 
+#include <benchmark/benchmark.h>
 #include <span>
 
 template <OrderBookLike Book>
@@ -11,20 +12,24 @@ void runWorkload(Book& book, std::span<const Event> workload) {
   for (std::size_t i{}; i < workload.size(); ++i) {
     const Event& event = workload[i];
 
-    switch (event.op) {
-    case Operation::Add: {
-      book.addOrder(Order{event.id, event.side, OrderType::Limit,
-                          TimeInForce::GTC, event.price, event.qty});
+    switch (event.eventName) {
+    case EventType::Add: {
+      auto trades =
+          book.addOrder(Order{event.id, event.side, OrderType::Limit,
+                              TimeInForce::GTC, event.price, event.qty});
+      benchmark::DoNotOptimize(trades);
       break;
     }
 
-    case Operation::Modify: {
-      book.modifyOrder(event.id, event.qty);
+    case EventType::Modify: {
+      bool status = book.modifyOrder(event.id, event.qty);
+      benchmark::DoNotOptimize(status);
       break;
     }
 
-    case Operation::Cancel: {
-      book.cancelOrder(event.id);
+    case EventType::Cancel: {
+      bool status = book.cancelOrder(event.id);
+      benchmark::DoNotOptimize(status);
       break;
     }
     }

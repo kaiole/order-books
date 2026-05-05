@@ -1,21 +1,23 @@
 #pragma once
 
-#include "workload/generate_workload.h"
 #include "order_book/order_book.h"
 #include "run_workload.h"
 #include "types.h"
+#include "workload/event_generator.h"
 
 #include <span>
 
 template <OrderBookLike Book>
-void runBenchmark(const BenchConf& benchConf) {
-  Workload events = generateWorkload(
-      benchConf.workloadSize + benchConf.warmupSize, benchConf.seed);
+void runBenchmark(const BenchConfig& benchConf) {
+  EventGenerator eventGenerator(benchConf);
+
+  Workload events = eventGenerator.generate();
 
   std::span<const Event> workload{events};
 
-  auto warmupWorkload = workload.first(benchConf.warmupSize);
-  auto benchWorkload = workload.subspan(benchConf.warmupSize);
+  auto warmupWorkload = workload.first(benchConf.warmupCount);
+  auto benchWorkload =
+      workload.subspan(benchConf.warmupCount, benchConf.eventCount);
 
   Book book;
 

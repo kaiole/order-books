@@ -2,4 +2,4 @@
 
 #include "types.h"
 
-BenchConf parseArgs(int argc, char** argv);
+BenchConfig parseArgs(int argc, char** argv);
