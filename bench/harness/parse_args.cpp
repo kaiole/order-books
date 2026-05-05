@@ -19,6 +19,8 @@ constexpr std::string_view seedFlag = "--seed";
 constexpr std::string_view addRatioFlag = "--add-ratio";
 constexpr std::string_view cancelRatioFlag = "--cancel-ratio";
 constexpr std::string_view modifyRatioFlag = "--modify-ratio";
+constexpr std::string_view scenarioFlag = "--scenario";
+constexpr std::string_view outputDirFlag = "--output-dir";
 
 double parseDouble(std::string_view value) {
   if (value.empty()) {
@@ -89,8 +91,8 @@ Impl parseImpl(std::string_view value) {
 
 } // namespace
 
-BenchConfig parseArgs(int argc, char** argv) {
-  BenchConfig config;
+RunConfig parseArgs(int argc, char** argv) {
+  RunConfig config;
   bool implSet = false;
   bool addRatioSet = false;
   bool cancelRatioSet = false;
@@ -112,20 +114,24 @@ BenchConfig parseArgs(int argc, char** argv) {
       config.impl = parseImpl(value);
       implSet = true;
     } else if (flag == workloadSizeFlag) {
-      config.eventCount = parseNum<std::size_t>(value);
+      config.workload.eventCount = parseNum<std::size_t>(value);
     } else if (flag == warmupSizeFlag) {
-      config.warmupCount = parseNum<std::size_t>(value);
+      config.workload.warmupCount = parseNum<std::size_t>(value);
     } else if (flag == seedFlag) {
-      config.seed = parseNum<std::uint64_t>(value);
+      config.workload.seed = parseNum<std::uint64_t>(value);
     } else if (flag == addRatioFlag) {
-      config.addRatio = parseDouble(value);
+      config.workload.mix.add = parseDouble(value);
       addRatioSet = true;
     } else if (flag == cancelRatioFlag) {
-      config.cancelRatio = parseDouble(value);
+      config.workload.mix.cancel = parseDouble(value);
       cancelRatioSet = true;
     } else if (flag == modifyRatioFlag) {
-      config.modifyRatio = parseDouble(value);
+      config.workload.mix.modify = parseDouble(value);
       modifyRatioSet = true;
+    } else if (flag == scenarioFlag) {
+      config.scenarioName = std::string(value);
+    } else if (flag == outputDirFlag) {
+      config.outputDir = std::string(value);
     } else {
       throw std::invalid_argument("unknown arg: " + std::string(token));
     }
@@ -138,7 +144,8 @@ BenchConfig parseArgs(int argc, char** argv) {
                                 "--add-ratio=<double> "
                                 "--cancel-ratio=<double> "
                                 "--modify-ratio=<double> "
-                                "[--size=<n>] [--warmup=<n>] [--seed=<n>]");
+                                "[--size=<n>] [--warmup=<n>] [--seed=<n>] "
+                                "[--scenario=<name>] [--output-dir=<path>]");
   }
 
   return config;

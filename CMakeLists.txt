@@ -29,8 +29,11 @@ target_compile_options(
   ${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic $<$<CONFIG:Release>:-O3
                           -march=native -DNDEBUG>)
 
-if(BUILD_TESTS)
+if(BUILD_TESTS OR BUILD_BENCH)
   enable_testing()
+endif()
+
+if(BUILD_TESTS)
   add_subdirectory(tests)
 endif()
 

@@ -1,3 +1,5 @@
 .cache/
 build/
 tmp/
+results/
+perf/samples/

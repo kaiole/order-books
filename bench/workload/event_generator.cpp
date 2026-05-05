@@ -4,7 +4,6 @@
 #include "types.h"
 
 #include <cstddef>
-#include <random>
 #include <stdexcept>
 
 namespace {
@@ -13,24 +12,20 @@ constexpr double bidProbability = 0.5;
 
 } // namespace
 
-EventGenerator::EventGenerator(BenchConfig conf)
-    : config_{conf}, rng_{conf.seed}, nextId_{0} {
-  // Reserving worst case (all adds) is fine since this part won't negatively
-  // impact benchmark results
+EventGenerator::EventGenerator(WorkloadConfig conf)
+    : config_{conf}, rng_{conf.seed}, sideDist_{bidProbability},
+      bidOffsetDist_{1, conf.maxPriceOffset},
+      askOffsetDist_{0, conf.maxPriceOffset},
+      qtyDist_{conf.minQty, conf.maxQty},
+      eventDist_{conf.mix.add, conf.mix.modify, conf.mix.cancel}, nextId_{0} {
   liveOrders_.reserve(conf.eventCount + conf.warmupCount);
 }
 
 Event EventGenerator::emitAddEvent() {
-  std::bernoulli_distribution sideDist{bidProbability};
-  std::uniform_int_distribution<Price> bidOffsetDist{1, config_.maxPriceOffset};
-  std::uniform_int_distribution<Price> askOffsetDist{0, config_.maxPriceOffset};
-  std::uniform_int_distribution<Quantity> qtyDist{config_.minQty,
-                                                  config_.maxQty};
-
-  Side side = sideDist(rng_) ? Side::Bid : Side::Ask;
-  Price price = side == Side::Bid ? config_.midPrice - bidOffsetDist(rng_)
-                                  : config_.midPrice + askOffsetDist(rng_);
-  Quantity qty = qtyDist(rng_);
+  Side side = sideDist_(rng_) ? Side::Bid : Side::Ask;
+  Price price = side == Side::Bid ? config_.midPrice - bidOffsetDist_(rng_)
+                                  : config_.midPrice + askOffsetDist_(rng_);
+  Quantity qty = qtyDist_(rng_);
 
   Event event{.eventName = EventType::Add,
               .id = ++nextId_,
@@ -47,7 +42,6 @@ Event EventGenerator::emitModifyEvent() {
   auto liveIndex = pickLiveIndex();
   auto& liveOrder = liveOrders_[liveIndex];
 
-  // Orderbook is reduce-only. Can't reduce 1, cancel instead.
   if (liveOrder.qty <= 1) {
     return emitCancelEvent();
   }
@@ -85,11 +79,8 @@ Workload EventGenerator::generate() {
   const auto totalEvents = config_.eventCount + config_.warmupCount;
   workload.reserve(totalEvents);
 
-  std::discrete_distribution<int> eventDist{
-      config_.addRatio, config_.modifyRatio, config_.cancelRatio};
-
   for (std::size_t i{}; i < totalEvents; ++i) {
-    auto eventName = static_cast<EventType>(eventDist(rng_));
+    auto eventName = static_cast<EventType>(eventDist_(rng_));
 
     if (eventName != EventType::Add && liveOrders_.empty()) {
       eventName = EventType::Add;

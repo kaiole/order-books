@@ -8,16 +8,16 @@
 #include <span>
 
 template <OrderBookLike Book>
-void runBenchmark(const BenchConfig& benchConf) {
-  EventGenerator eventGenerator(benchConf);
+void runBenchmark(const RunConfig& runConf) {
+  EventGenerator eventGenerator(runConf.workload);
 
   Workload events = eventGenerator.generate();
 
   std::span<const Event> workload{events};
 
-  auto warmupWorkload = workload.first(benchConf.warmupCount);
-  auto benchWorkload =
-      workload.subspan(benchConf.warmupCount, benchConf.eventCount);
+  auto warmupWorkload = workload.first(runConf.workload.warmupCount);
+  auto benchWorkload = workload.subspan(runConf.workload.warmupCount,
+                                        runConf.workload.eventCount);
 
   Book book;
 

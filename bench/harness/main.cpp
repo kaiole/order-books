@@ -9,7 +9,7 @@
 
 int main(int argc, char** argv) {
   try {
-    BenchConfig config = parseArgs(argc, argv);
+    RunConfig config = parseArgs(argc, argv);
 
     switch (config.impl) {
     case Impl::MapDeque:
