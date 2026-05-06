@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "output/latency_record.h"
 
 #include <span>
 #include <string_view>

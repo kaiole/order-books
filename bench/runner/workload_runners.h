@@ -2,7 +2,8 @@
 
 #include "order_book/order_book.h"
 #include "order_book/types.h"
-#include "types.h"
+#include "output/latency_record.h"
+#include "workload/event.h"
 
 #include <benchmark/benchmark.h>
 #include <chrono>
@@ -12,7 +13,7 @@
 template <OrderBookLike Book>
 [[nodiscard]] std::vector<LatencyRecord>
 runTimed(Book& book, std::span<const Event> workload) {
-  auto latencyNs = []<typename T>(T t0, T t1) {
+  auto latencyNs = []<typename T>(T t0, T t1) -> std::int64_t {
     return std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0)
         .count();
   };
@@ -36,7 +37,6 @@ runTimed(Book& book, std::span<const Event> workload) {
                               .eventType =
                                   static_cast<std::uint8_t>(event.eventType)};
       times.push_back(record);
-
       break;
     }
 
@@ -50,7 +50,6 @@ runTimed(Book& book, std::span<const Event> workload) {
                               .eventType =
                                   static_cast<std::uint8_t>(event.eventType)};
       times.push_back(record);
-
       break;
     }
 
@@ -64,7 +63,6 @@ runTimed(Book& book, std::span<const Event> workload) {
                               .eventType =
                                   static_cast<std::uint8_t>(event.eventType)};
       times.push_back(record);
-
       break;
     }
     }

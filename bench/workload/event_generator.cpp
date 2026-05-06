@@ -1,7 +1,7 @@
 #include "event_generator.h"
 
 #include "order_book/types.h"
-#include "types.h"
+#include "workload/event.h"
 
 #include <cstddef>
 #include <stdexcept>

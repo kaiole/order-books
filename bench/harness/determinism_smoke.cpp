@@ -1,4 +1,5 @@
-#include "types.h"
+#include "config.h"
+#include "workload/event.h"
 #include "workload/event_generator.h"
 
 #include <cstring>

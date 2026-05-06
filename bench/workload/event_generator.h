@@ -1,7 +1,8 @@
 #pragma once
 
+#include "config.h"
 #include "order_book/types.h"
-#include "types.h"
+#include "workload/event.h"
 
 #include <cstddef>
 #include <random>

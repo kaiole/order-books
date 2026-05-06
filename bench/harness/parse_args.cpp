@@ -1,6 +1,6 @@
 #include "parse_args.h"
 
-#include "types.h"
+#include "config.h"
 
 #include <charconv>
 #include <concepts>

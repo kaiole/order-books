@@ -1,6 +1,6 @@
 #include "output/write_latencies.h"
 
-#include "types.h"
+#include "output/latency_record.h"
 
 #include <fstream>
 #include <ios>

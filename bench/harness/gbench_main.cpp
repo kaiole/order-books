@@ -1,9 +1,10 @@
+#include "config.h"
 #include "order_book/map_deque_order_book.h"
 #include "order_book/map_list_order_book.h"
 #include "order_book/order_book.h"
 #include "output/run_metadata.h"
 #include "runner/workload_runners.h"
-#include "types.h"
+#include "workload/event.h"
 #include "workload/event_generator.h"
 
 #include <benchmark/benchmark.h>

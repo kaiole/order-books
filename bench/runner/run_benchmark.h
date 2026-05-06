@@ -1,9 +1,11 @@
 #pragma once
 
+#include "config.h"
 #include "order_book/order_book.h"
+#include "output/latency_record.h"
 #include "output/run_metadata.h"
 #include "output/write_latencies.h"
-#include "types.h"
+#include "workload/event.h"
 #include "workload/event_generator.h"
 #include "workload_runners.h"
 

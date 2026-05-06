@@ -1,7 +1,5 @@
 #include "run_metadata.h"
 
-#include "types.h"
-
 #include <chrono>
 #include <cstdio>
 #include <ctime>
