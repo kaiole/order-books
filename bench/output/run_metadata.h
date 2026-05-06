@@ -23,4 +23,5 @@ RunMetadata captureRunMetadata();
 std::string implName(Impl impl);
 
 void writeMetadataJson(const std::string& path, const RunMetadata& meta,
-                       const RunConfig& run);
+                       const RunConfig& run, const std::string& rawFile,
+                       std::size_t recordCount, std::size_t recordSizeBytes);

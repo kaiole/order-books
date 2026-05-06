@@ -2,7 +2,7 @@
 #include "order_book/map_list_order_book.h"
 #include "order_book/order_book.h"
 #include "output/run_metadata.h"
-#include "runner/run_workload.h"
+#include "runner/workload_runners.h"
 #include "types.h"
 #include "workload/event_generator.h"
 
@@ -38,11 +38,11 @@ void runOnce(benchmark::State& state, const WorkloadConfig& workloadConf) {
         all.subspan(workloadConf.warmupCount, workloadConf.eventCount);
 
     Book book;
-    runWorkload(book, warmup);
+    runUntimed(book, warmup);
 
     state.ResumeTiming();
 
-    runWorkload(book, measured);
+    runUntimed(book, measured);
 
     state.PauseTiming();
     benchmark::DoNotOptimize(book);
@@ -72,7 +72,7 @@ void emitMetadata() {
   run.workload = defaultWorkload(1'000'000, 100'000);
 
   std::string path = dir + "/meta_" + meta.runId + ".json";
-  writeMetadataJson(path, meta, run);
+  writeMetadataJson(path, meta, run, "", 0, 0);
 }
 
 } // namespace

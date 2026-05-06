@@ -36,7 +36,7 @@ struct RunConfig {
 enum class EventType : std::uint8_t { Add = 0, Modify = 1, Cancel = 2 };
 
 struct Event {
-  EventType eventName;
+  EventType eventType;
   OrderId id;
   Side side;
   Price price;
@@ -44,3 +44,20 @@ struct Event {
 };
 
 using Workload = std::vector<Event>;
+
+struct LatencyRecord {
+  std::int64_t latencyNs;
+  std::uint8_t eventType;
+  std::uint8_t pad[7]{};
+};
+
+static_assert(sizeof(LatencyRecord) == 16);
+
+struct RawHeader {
+  char magic[8];
+  std::uint32_t version;
+  std::uint32_t recordSize;
+  std::uint64_t recordCount;
+};
+
+static_assert(sizeof(RawHeader) == 24);

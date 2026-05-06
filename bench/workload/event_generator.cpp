@@ -27,7 +27,7 @@ Event EventGenerator::emitAddEvent() {
                                   : config_.midPrice + askOffsetDist_(rng_);
   Quantity qty = qtyDist_(rng_);
 
-  Event event{.eventName = EventType::Add,
+  Event event{.eventType = EventType::Add,
               .id = ++nextId_,
               .side = side,
               .price = price,
@@ -51,7 +51,7 @@ Event EventGenerator::emitModifyEvent() {
 
   liveOrder.qty = newQty;
 
-  return Event{.eventName = EventType::Modify,
+  return Event{.eventType = EventType::Modify,
                .id = liveOrder.id,
                .side = Side{},
                .price = Price{},
@@ -62,7 +62,7 @@ Event EventGenerator::emitCancelEvent() {
   auto liveIndex = pickLiveIndex();
   auto& liveOrder = liveOrders_[liveIndex];
 
-  Event event = Event{.eventName = EventType::Cancel,
+  Event event = Event{.eventType = EventType::Cancel,
                       .id = liveOrder.id,
                       .side = Side{},
                       .price = Price{},

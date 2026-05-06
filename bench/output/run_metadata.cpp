@@ -197,7 +197,8 @@ RunMetadata captureRunMetadata() {
 }
 
 void writeMetadataJson(const std::string& path, const RunMetadata& meta,
-                       const RunConfig& run) {
+                       const RunConfig& run, const std::string& rawFile,
+                       std::size_t recordCount, std::size_t recordSizeBytes) {
   std::ofstream out(path);
   if (!out) {
     return;
@@ -238,6 +239,17 @@ void writeMetadataJson(const std::string& path, const RunMetadata& meta,
   writeKv(out, "hostname", meta.hostname, false);
   writeKv(out, "cpuModel", meta.cpuModel, false);
   writeKv(out, "cpuGovernor", meta.cpuGovernor, true);
+  out << "  },\n";
+
+  out << "  \"raw\": {\n";
+  writeKv(out, "file", rawFile, false);
+  writeKvNum(out, "recordCount", recordCount, false);
+  writeKvNum(out, "recordSizeBytes", recordSizeBytes, false);
+  writeKv(out, "format",
+          "header{char magic[8]; uint32 version; uint32 recordSize; uint64 "
+          "recordCount} then records{int64 latencyNs; uint8 eventType; uint8 "
+          "pad[7]}",
+          true);
   out << "  }\n";
 
   out << "}\n";
