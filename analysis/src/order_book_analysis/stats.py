@@ -31,13 +31,13 @@ def summarize(latencies: np.ndarray) -> dict[str, float]:
 
     row: dict[str, float] = {
         "n": int(latencies.size),
-        "mean_ns": float(latencies.mean()),
         "max_ns": float(latencies.max()),
     }
 
     percentiles = np.percentile(latencies, PERCENTILES)
     for p, v in zip(PERCENTILES, percentiles):
         row[_percentile_key(p)] = float(v)
+
     return row
 
 
