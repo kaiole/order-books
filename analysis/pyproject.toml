@@ -6,5 +6,18 @@ requires-python = ">=3.12"
 
 dependencies = [
   "numpy",
-  "pandas"
+  "pandas",
+  "matplotlib"
 ]
+
+[project.optional-dependencies]
+dev = [
+  "pandas-stubs"
+]
+
+[project.scripts]
+order-book-analyze = "order_book_analysis.cli:main"
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
