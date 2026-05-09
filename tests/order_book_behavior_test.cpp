@@ -1,4 +1,7 @@
+#include "order_book/map_deque_fat_order_book.h"
+#include "order_book/map_deque_iter_order_book.h"
 #include "order_book/map_deque_order_book.h"
+#include "order_book/map_list_iter_order_book.h"
 #include "order_book/map_list_order_book.h"
 #include "order_book/order_book.h"
 #include "order_book/types.h"
@@ -21,6 +24,9 @@ Order makeOrder(OrderId id, Side side, Price price, Quantity qty,
 
 static_assert(OrderBookLike<MapDequeOrderBook>);
 static_assert(OrderBookLike<MapListOrderBook>);
+static_assert(OrderBookLike<MapDequeIterOrderBook>);
+static_assert(OrderBookLike<MapListIterOrderBook>);
+static_assert(OrderBookLike<MapDequeFatOrderBook>);
 
 template <typename T>
 class OrderBookTestBase : public ::testing::Test {
@@ -62,7 +68,10 @@ using CancelImpl = ::testing::Types<MapListOrderBook>;
 // TYPED_TEST_SUITE(CancelTest, CancelImpl);
 
 // Run all suites on all implementations
-using FullImpl = ::testing::Types<MapDequeOrderBook, MapListOrderBook>;
+using FullImpl =
+    ::testing::Types<MapDequeOrderBook, MapListOrderBook,
+                     MapDequeIterOrderBook, MapListIterOrderBook,
+                     MapDequeFatOrderBook>;
 
 TYPED_TEST_SUITE(RestingTest, FullImpl);
 TYPED_TEST_SUITE(MatchingTest, FullImpl);

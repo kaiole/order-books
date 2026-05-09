@@ -1,5 +1,8 @@
 #include "config.h"
+#include "order_book/map_deque_fat_order_book.h"
+#include "order_book/map_deque_iter_order_book.h"
 #include "order_book/map_deque_order_book.h"
+#include "order_book/map_list_iter_order_book.h"
 #include "order_book/map_list_order_book.h"
 #include "order_book/order_book.h"
 #include "output/run_metadata.h"
@@ -85,6 +88,21 @@ BENCHMARK(benchDefault<MapDequeOrderBook>)
 
 BENCHMARK(benchDefault<MapListOrderBook>)
     ->Name("MapList/default")
+    ->Args({1'000'000, 100'000})
+    ->Unit(benchmark::kMillisecond);
+
+BENCHMARK(benchDefault<MapDequeIterOrderBook>)
+    ->Name("MapDequeIter/default")
+    ->Args({1'000'000, 100'000})
+    ->Unit(benchmark::kMillisecond);
+
+BENCHMARK(benchDefault<MapListIterOrderBook>)
+    ->Name("MapListIter/default")
+    ->Args({1'000'000, 100'000})
+    ->Unit(benchmark::kMillisecond);
+
+BENCHMARK(benchDefault<MapDequeFatOrderBook>)
+    ->Name("MapDequeFat/default")
     ->Args({1'000'000, 100'000})
     ->Unit(benchmark::kMillisecond);
 

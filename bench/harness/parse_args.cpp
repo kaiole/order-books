@@ -86,6 +86,18 @@ Impl parseImpl(std::string_view value) {
     return Impl::MapList;
   }
 
+  if (value == "MapDequeIter" || value == "mapdequeiter") {
+    return Impl::MapDequeIter;
+  }
+
+  if (value == "MapListIter" || value == "maplistiter") {
+    return Impl::MapListIter;
+  }
+
+  if (value == "MapDequeFat" || value == "mapdequefat") {
+    return Impl::MapDequeFat;
+  }
+
   throw std::invalid_argument("unknown impl: " + std::string(value));
 }
 
@@ -140,7 +152,7 @@ RunConfig parseArgs(int argc, char** argv) {
   if (!implSet || !addRatioSet || !cancelRatioSet || !modifyRatioSet) {
     throw std::invalid_argument("missing required args\n"
                                 "usage: "
-                                "--impl=<MapDeque|MapList> "
+                                "--impl=<MapDeque|MapList|MapDequeIter|MapListIter|MapDequeFat> "
                                 "--add-ratio=<double> "
                                 "--cancel-ratio=<double> "
                                 "--modify-ratio=<double> "

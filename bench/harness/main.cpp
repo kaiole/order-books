@@ -1,5 +1,8 @@
 #include "config.h"
+#include "order_book/map_deque_fat_order_book.h"
+#include "order_book/map_deque_iter_order_book.h"
 #include "order_book/map_deque_order_book.h"
+#include "order_book/map_list_iter_order_book.h"
 #include "order_book/map_list_order_book.h"
 #include "parse_args.h"
 #include "runner/run_benchmark.h"
@@ -17,6 +20,15 @@ int main(int argc, char** argv) {
       break;
     case Impl::MapList:
       runBenchmark<MapListOrderBook>(config);
+      break;
+    case Impl::MapDequeIter:
+      runBenchmark<MapDequeIterOrderBook>(config);
+      break;
+    case Impl::MapListIter:
+      runBenchmark<MapListIterOrderBook>(config);
+      break;
+    case Impl::MapDequeFat:
+      runBenchmark<MapDequeFatOrderBook>(config);
       break;
     }
   } catch (const std::exception& err) {

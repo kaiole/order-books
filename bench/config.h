@@ -6,7 +6,13 @@
 #include <cstdint>
 #include <string>
 
-enum class Impl { MapDeque, MapList };
+enum class Impl : std::uint8_t {
+  MapDeque,
+  MapList,
+  MapDequeIter,
+  MapListIter,
+  MapDequeFat
+};
 
 struct EventMix {
   double add;

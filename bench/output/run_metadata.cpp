@@ -154,6 +154,15 @@ std::string implName(Impl impl) {
 
   case Impl::MapList:
     return "MapList";
+
+  case Impl::MapDequeIter:
+    return "MapDequeIter";
+
+  case Impl::MapListIter:
+    return "MapListIter";
+
+  case Impl::MapDequeFat:
+    return "MapDequeFat";
   }
 
   return "Unknown";

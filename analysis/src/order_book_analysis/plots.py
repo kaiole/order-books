@@ -12,6 +12,9 @@ from .stats import EVENT_TYPE_NAMES, PERCENTILES, _percentile_key, summarize_run
 IMPL_COLORS: dict[str, str] = {
     "MapDeque": "#1f77b4",
     "MapList": "#ff7f0e",
+    "MapDequeIter": "#2ca02c",
+    "MapListIter": "#d62728",
+    "MapDequeFat": "#9467bd",
 }
 
 EVENT_TYPE_ORDER = ("all", "add", "modify", "cancel")
