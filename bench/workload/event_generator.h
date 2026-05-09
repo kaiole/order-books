@@ -33,6 +33,8 @@ private:
   std::uniform_int_distribution<Price> askOffsetDist_;
   std::uniform_int_distribution<Quantity> qtyDist_;
   std::discrete_distribution<int> eventDist_;
+  std::bernoulli_distribution crossDist_;
+  std::discrete_distribution<int> tifDist_;
 
   OrderId nextId_;
   std::vector<LiveOrder> liveOrders_;

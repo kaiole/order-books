@@ -24,7 +24,6 @@ def summarize(latencies: np.ndarray) -> dict[str, float]:
     if latencies.size == 0:
         return {
             "n": 0,
-            "mean_ns": float("nan"),
             "max_ns": float("nan"),
             **{_percentile_key(p): float("nan") for p in PERCENTILES},
         }

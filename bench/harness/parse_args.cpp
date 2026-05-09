@@ -22,6 +22,10 @@ constexpr std::string_view modifyRatioFlag = "--modify-ratio";
 constexpr std::string_view scenarioFlag = "--scenario";
 constexpr std::string_view outputDirFlag = "--output-dir";
 constexpr std::string_view maxPriceOffsetFlag = "--max-price-offset";
+constexpr std::string_view crossProbFlag = "--cross-prob";
+constexpr std::string_view gtcRatioFlag = "--gtc-ratio";
+constexpr std::string_view iocRatioFlag = "--ioc-ratio";
+constexpr std::string_view fokRatioFlag = "--fok-ratio";
 
 double parseDouble(std::string_view value) {
   if (value.empty()) {
@@ -107,9 +111,6 @@ Impl parseImpl(std::string_view value) {
 RunConfig parseArgs(int argc, char** argv) {
   RunConfig config;
   bool implSet = false;
-  bool addRatioSet = false;
-  bool cancelRatioSet = false;
-  bool modifyRatioSet = false;
 
   for (int i = 1; i < argc; ++i) {
     std::string_view token = argv[i];
@@ -134,13 +135,10 @@ RunConfig parseArgs(int argc, char** argv) {
       config.workload.seed = parseNum<std::uint64_t>(value);
     } else if (flag == addRatioFlag) {
       config.workload.mix.add = parseDouble(value);
-      addRatioSet = true;
     } else if (flag == cancelRatioFlag) {
       config.workload.mix.cancel = parseDouble(value);
-      cancelRatioSet = true;
     } else if (flag == modifyRatioFlag) {
       config.workload.mix.modify = parseDouble(value);
-      modifyRatioSet = true;
     } else if (flag == scenarioFlag) {
       config.scenarioName = std::string(value);
     } else if (flag == outputDirFlag) {
@@ -148,19 +146,28 @@ RunConfig parseArgs(int argc, char** argv) {
     } else if (flag == maxPriceOffsetFlag) {
       config.workload.maxPriceOffset =
           static_cast<Price>(parseNum<std::uint32_t>(value));
+    } else if (flag == crossProbFlag) {
+      config.workload.crossProbability = parseDouble(value);
+    } else if (flag == gtcRatioFlag) {
+      config.workload.tifMix.gtc = parseDouble(value);
+    } else if (flag == iocRatioFlag) {
+      config.workload.tifMix.ioc = parseDouble(value);
+    } else if (flag == fokRatioFlag) {
+      config.workload.tifMix.fok = parseDouble(value);
     } else {
       throw std::invalid_argument("unknown arg: " + std::string(token));
     }
   }
 
-  if (!implSet || !addRatioSet || !cancelRatioSet || !modifyRatioSet) {
+  if (!implSet) {
     throw std::invalid_argument(
         "missing required args\n"
         "usage: "
         "--impl=<MapDeque|MapList|MapDequeIter|MapListIter|MapDequeFat> "
-        "--add-ratio=<double> "
-        "--cancel-ratio=<double> "
-        "--modify-ratio=<double> "
+        "[--add-ratio=<double>] [--cancel-ratio=<double>] "
+        "[--modify-ratio=<double>] "
+        "[--cross-prob=<double>] [--gtc-ratio=<double>] "
+        "[--ioc-ratio=<double>] [--fok-ratio=<double>] "
         "[--size=<n>] [--warmup=<n>] [--seed=<n>] "
         "[--scenario=<name>] [--output-dir=<path>] "
         "[--max-price-offset=<n>]");

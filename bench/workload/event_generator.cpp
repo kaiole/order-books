@@ -17,7 +17,9 @@ EventGenerator::EventGenerator(WorkloadConfig conf)
       bidOffsetDist_{1, conf.maxPriceOffset},
       askOffsetDist_{0, conf.maxPriceOffset},
       qtyDist_{conf.minQty, conf.maxQty},
-      eventDist_{conf.mix.add, conf.mix.modify, conf.mix.cancel}, nextId_{0} {
+      eventDist_{conf.mix.add, conf.mix.modify, conf.mix.cancel},
+      crossDist_{conf.crossProbability},
+      tifDist_{conf.tifMix.gtc, conf.tifMix.ioc, conf.tifMix.fok}, nextId_{0} {
   liveOrders_.reserve(prefillCount() + conf.warmupCount + conf.eventCount);
 }
 
@@ -78,6 +80,7 @@ std::size_t EventGenerator::prefillCount() const {
   if (config_.mix.add >= 0.5) {
     return 0;
   }
+
   return config_.warmupCount + config_.eventCount;
 }
 

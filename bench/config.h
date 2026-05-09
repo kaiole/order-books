@@ -20,6 +20,12 @@ struct EventMix {
   double cancel;
 };
 
+struct TifMix {
+  double gtc;
+  double ioc;
+  double fok;
+};
+
 struct WorkloadConfig {
   std::size_t eventCount = 1'000'000;
   std::size_t warmupCount = 100'000;
@@ -27,6 +33,8 @@ struct WorkloadConfig {
   EventMix mix{0.6, 0.2, 0.2};
   Price midPrice = 10'000;
   Price maxPriceOffset = 50;
+  double crossProbability = 0.0;
+  TifMix tifMix{1.0, 0.0, 0.0};
   Quantity minQty = 1;
   Quantity maxQty = 100;
 };
