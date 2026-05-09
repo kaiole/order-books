@@ -1,11 +1,12 @@
 from pathlib import Path
+from typing import Iterable
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.figure import Figure
 
-from .metadata import RunMetadata, discover_runs
+from .metadata import RunMetadata, discover_runs, filter_runs
 from .read_raw import RawFile, read_raw
 from .stats import EVENT_TYPE_NAMES, PERCENTILES, _percentile_key, summarize_runs
 
@@ -170,8 +171,28 @@ def plot_percentiles(df: pd.DataFrame) -> Figure:
     return fig
 
 
+def _selected_runs(
+    pairs: list[tuple[RunMetadata, Path]],
+) -> dict[str, tuple[RunMetadata, RawFile]]:
+    by_impl: dict[str, tuple[RunMetadata, Path]] = {}
+    for meta, raw_path in pairs:
+        existing = by_impl.get(meta.run.impl)
+        if existing is not None and existing[0].run.run_id != meta.run.run_id:
+            raise ValueError(
+                f"multiple runs for impl {meta.run.impl!r} in selection "
+                f"({existing[0].run.run_id}, {meta.run.run_id}); "
+                f"narrow with --run-id")
+        by_impl[meta.run.impl] = (meta, raw_path)
+
+    return {impl: (meta, read_raw(raw_path))
+            for impl, (meta, raw_path) in by_impl.items()}
+
+
 def plot_all(results_dir: str | Path, out_dir: str | Path,
-             xlimit: tuple[float, float] | None = None) -> list[Path]:
+             xlimit: tuple[float, float] | None = None,
+             impls: Iterable[str] | None = None,
+             run_ids: Iterable[str] | None = None,
+             scenarios: Iterable[str] | None = None) -> list[Path]:
     results_dir = Path(results_dir)
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -180,7 +201,17 @@ def plot_all(results_dir: str | Path, out_dir: str | Path,
     if not pairs:
         raise FileNotFoundError(f"no runs in {results_dir}")
 
-    latest = _latest_run_per_impl(pairs)
+    has_filter = any(x is not None for x in (impls, run_ids, scenarios))
+    if has_filter:
+        pairs = filter_runs(pairs, impls=impls, run_ids=run_ids,
+                            scenarios=scenarios)
+        if not pairs:
+            raise FileNotFoundError(
+                f"no runs in {results_dir} matched filters "
+                f"(impls={impls}, run_ids={run_ids}, scenarios={scenarios})")
+        latest = _selected_runs(pairs)
+    else:
+        latest = _latest_run_per_impl(pairs)
     summary_df = summarize_runs(
         [(meta, results_dir / meta.raw.file) for meta, _ in latest.values()])
 

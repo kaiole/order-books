@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from .read_raw import EventType, RawFile, read_raw
-from .metadata import RunMetadata, discover_runs
+from .metadata import RunMetadata, discover_runs, filter_runs
 
 PERCENTILES = (50.0, 90.0, 99.0, 99.9)
 
@@ -76,5 +76,12 @@ def summarize_runs(pairs: Iterable[tuple[RunMetadata, Path]]) -> pd.DataFrame:
     return pd.concat(frames, ignore_index=True)
 
 
-def summarize_dir(results_dir: str | Path) -> pd.DataFrame:
-    return summarize_runs(discover_runs(results_dir))
+def summarize_dir(
+    results_dir: str | Path,
+    impls: Iterable[str] | None = None,
+    run_ids: Iterable[str] | None = None,
+    scenarios: Iterable[str] | None = None,
+) -> pd.DataFrame:
+    pairs = discover_runs(results_dir)
+    pairs = filter_runs(pairs, impls=impls, run_ids=run_ids, scenarios=scenarios)
+    return summarize_runs(pairs)

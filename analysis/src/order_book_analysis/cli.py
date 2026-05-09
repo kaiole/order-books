@@ -7,9 +7,12 @@ from .stats import summarize_dir
 
 
 def _summarize(args: argparse.Namespace) -> int:
-    df = summarize_dir(args.results_dir)
+    df = summarize_dir(args.results_dir, impls=args.impl,
+                       run_ids=args.run_id, scenarios=args.scenario)
     if df.empty:
-        print(f"no runs found in {args.results_dir}", file=sys.stderr)
+        print(f"no runs found in {args.results_dir} "
+              f"(impls={args.impl}, run_ids={args.run_id}, "
+              f"scenarios={args.scenario})", file=sys.stderr)
         return 1
 
     if args.out is None:
@@ -28,10 +31,21 @@ def _plot(args: argparse.Namespace) -> int:
         lo, hi = args.xlimit.split(",")
         xlimit = (float(lo), float(hi))
 
-    written = plot_all(args.results_dir, args.out, xlimit=xlimit)
+    written = plot_all(args.results_dir, args.out, xlimit=xlimit,
+                       impls=args.impl, run_ids=args.run_id,
+                       scenarios=args.scenario)
     for path in written:
         print(f"wrote {path}")
     return 0
+
+
+def _add_filter_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--impl", action="append", default=None,
+                        help="filter by impl (repeatable; OR within flag)")
+    parser.add_argument("--run-id", action="append", default=None,
+                        help="filter by run_id (repeatable; OR within flag)")
+    parser.add_argument("--scenario", action="append", default=None,
+                        help="filter by scenario (repeatable; OR within flag)")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -43,6 +57,7 @@ def main(argv: list[str] | None = None) -> int:
     summarize.add_argument("results_dir", type=Path)
     summarize.add_argument("--out", type=Path, default=None,
                              help="write CSV to this path (default: stdout)")
+    _add_filter_args(summarize)
     summarize.set_defaults(func=_summarize)
 
     plot = sub.add_parser(
@@ -52,6 +67,7 @@ def main(argv: list[str] | None = None) -> int:
                         help="output directory for plot images")
     plot.add_argument("--xlimit", type=str, default=None,
                         help="histogram xlimit as 'lo,hi' in ns (default: auto p99)")
+    _add_filter_args(plot)
     plot.set_defaults(func=_plot)
 
     args = parser.parse_args(argv)

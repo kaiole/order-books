@@ -1,6 +1,7 @@
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Iterable
 
 
 @dataclass(frozen=True)
@@ -111,6 +112,29 @@ def read_metadata(path: str | Path) -> RunMetadata:
             format=raw["format"],
         ),
     )
+
+
+def filter_runs(
+    pairs: list[tuple[RunMetadata, Path]],
+    impls: Iterable[str] | None = None,
+    run_ids: Iterable[str] | None = None,
+    scenarios: Iterable[str] | None = None,
+) -> list[tuple[RunMetadata, Path]]:
+    impl_set = set(impls) if impls else None
+    run_id_set = set(run_ids) if run_ids else None
+    scenario_set = set(scenarios) if scenarios else None
+
+    out: list[tuple[RunMetadata, Path]] = []
+    for meta, raw_path in pairs:
+        if impl_set is not None and meta.run.impl not in impl_set:
+            continue
+        if run_id_set is not None and meta.run.run_id not in run_id_set:
+            continue
+        if scenario_set is not None and meta.run.scenario not in scenario_set:
+            continue
+        out.append((meta, raw_path))
+
+    return out
 
 
 def discover_runs(results_dir: str | Path) -> list[tuple[RunMetadata, Path]]:
