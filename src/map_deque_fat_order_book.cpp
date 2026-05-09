@@ -46,9 +46,8 @@ bool MapDequeFatOrderBook::modifyOrder(OrderId id, Quantity newQty) {
   auto levelIt = orderIt->second;
   auto& level = levelIt->second;
 
-  auto queueIt = std::find_if(
-      level.queue.begin(), level.queue.end(),
-      [id](const Order& o) { return o.id == id; });
+  auto queueIt = std::find_if(level.queue.begin(), level.queue.end(),
+                              [id](const Order& o) { return o.id == id; });
 
   if (queueIt == level.queue.end()) {
     return false;
@@ -74,9 +73,8 @@ bool MapDequeFatOrderBook::cancelOrder(OrderId id) {
   auto levelIt = orderIt->second;
   auto& level = levelIt->second;
 
-  auto queueIt = std::find_if(
-      level.queue.begin(), level.queue.end(),
-      [id](const Order& o) { return o.id == id; });
+  auto queueIt = std::find_if(level.queue.begin(), level.queue.end(),
+                              [id](const Order& o) { return o.id == id; });
 
   if (queueIt == level.queue.end()) {
     return false;

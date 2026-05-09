@@ -69,9 +69,8 @@ using CancelImpl = ::testing::Types<MapListOrderBook>;
 
 // Run all suites on all implementations
 using FullImpl =
-    ::testing::Types<MapDequeOrderBook, MapListOrderBook,
-                     MapDequeIterOrderBook, MapListIterOrderBook,
-                     MapDequeFatOrderBook>;
+    ::testing::Types<MapDequeOrderBook, MapListOrderBook, MapDequeIterOrderBook,
+                     MapListIterOrderBook, MapDequeFatOrderBook>;
 
 TYPED_TEST_SUITE(RestingTest, FullImpl);
 TYPED_TEST_SUITE(MatchingTest, FullImpl);

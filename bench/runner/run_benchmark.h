@@ -17,16 +17,21 @@ template <OrderBookLike Book>
 void runBenchmark(const RunConfig& runConf) {
   EventGenerator eventGenerator(runConf.workload);
 
+  const std::size_t prefillCount = eventGenerator.prefillCount();
+
   Workload events = eventGenerator.generate();
 
   std::span<const Event> workload{events};
 
-  auto warmupWorkload = workload.first(runConf.workload.warmupCount);
-  auto benchWorkload = workload.subspan(runConf.workload.warmupCount,
-                                        runConf.workload.eventCount);
+  auto prefillWorkload = workload.first(prefillCount);
+  auto warmupWorkload =
+      workload.subspan(prefillCount, runConf.workload.warmupCount);
+  auto benchWorkload = workload.subspan(
+      prefillCount + runConf.workload.warmupCount, runConf.workload.eventCount);
 
   Book book;
 
+  runUntimed(book, prefillWorkload);
   runUntimed(book, warmupWorkload);
   auto records = runTimed(book, benchWorkload);
 

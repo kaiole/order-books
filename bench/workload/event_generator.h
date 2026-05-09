@@ -16,6 +16,7 @@ public:
   Event emitModifyEvent();
   Event emitCancelEvent();
 
+  std::size_t prefillCount() const;
   Workload generate();
 
 private:

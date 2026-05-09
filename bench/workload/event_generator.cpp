@@ -18,7 +18,7 @@ EventGenerator::EventGenerator(WorkloadConfig conf)
       askOffsetDist_{0, conf.maxPriceOffset},
       qtyDist_{conf.minQty, conf.maxQty},
       eventDist_{conf.mix.add, conf.mix.modify, conf.mix.cancel}, nextId_{0} {
-  liveOrders_.reserve(conf.eventCount + conf.warmupCount);
+  liveOrders_.reserve(prefillCount() + conf.warmupCount + conf.eventCount);
 }
 
 Event EventGenerator::emitAddEvent() {
@@ -74,12 +74,24 @@ Event EventGenerator::emitCancelEvent() {
   return event;
 }
 
+std::size_t EventGenerator::prefillCount() const {
+  if (config_.mix.add >= 0.5) {
+    return 0;
+  }
+  return config_.warmupCount + config_.eventCount;
+}
+
 Workload EventGenerator::generate() {
   Workload workload;
-  const auto totalEvents = config_.eventCount + config_.warmupCount;
-  workload.reserve(totalEvents);
+  const auto prefill = prefillCount();
+  const auto sampledEvents = config_.warmupCount + config_.eventCount;
+  workload.reserve(prefill + sampledEvents);
 
-  for (std::size_t i{}; i < totalEvents; ++i) {
+  for (std::size_t i{}; i < prefill; ++i) {
+    workload.push_back(emitAddEvent());
+  }
+
+  for (std::size_t i{}; i < sampledEvents; ++i) {
     auto eventName = static_cast<EventType>(eventDist_(rng_));
 
     if (eventName != EventType::Add && liveOrders_.empty()) {

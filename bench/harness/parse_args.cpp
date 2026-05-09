@@ -21,6 +21,7 @@ constexpr std::string_view cancelRatioFlag = "--cancel-ratio";
 constexpr std::string_view modifyRatioFlag = "--modify-ratio";
 constexpr std::string_view scenarioFlag = "--scenario";
 constexpr std::string_view outputDirFlag = "--output-dir";
+constexpr std::string_view maxPriceOffsetFlag = "--max-price-offset";
 
 double parseDouble(std::string_view value) {
   if (value.empty()) {
@@ -144,20 +145,25 @@ RunConfig parseArgs(int argc, char** argv) {
       config.scenarioName = std::string(value);
     } else if (flag == outputDirFlag) {
       config.outputDir = std::string(value);
+    } else if (flag == maxPriceOffsetFlag) {
+      config.workload.maxPriceOffset =
+          static_cast<Price>(parseNum<std::uint32_t>(value));
     } else {
       throw std::invalid_argument("unknown arg: " + std::string(token));
     }
   }
 
   if (!implSet || !addRatioSet || !cancelRatioSet || !modifyRatioSet) {
-    throw std::invalid_argument("missing required args\n"
-                                "usage: "
-                                "--impl=<MapDeque|MapList|MapDequeIter|MapListIter|MapDequeFat> "
-                                "--add-ratio=<double> "
-                                "--cancel-ratio=<double> "
-                                "--modify-ratio=<double> "
-                                "[--size=<n>] [--warmup=<n>] [--seed=<n>] "
-                                "[--scenario=<name>] [--output-dir=<path>]");
+    throw std::invalid_argument(
+        "missing required args\n"
+        "usage: "
+        "--impl=<MapDeque|MapList|MapDequeIter|MapListIter|MapDequeFat> "
+        "--add-ratio=<double> "
+        "--cancel-ratio=<double> "
+        "--modify-ratio=<double> "
+        "[--size=<n>] [--warmup=<n>] [--seed=<n>] "
+        "[--scenario=<name>] [--output-dir=<path>] "
+        "[--max-price-offset=<n>]");
   }
 
   return config;
