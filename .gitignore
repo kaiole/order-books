@@ -1,6 +1,5 @@
 .cache/
 build/
 tmp/
-results/
-perf/samples/
-plots
+plots/
+artifacts/

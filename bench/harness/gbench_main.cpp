@@ -66,7 +66,7 @@ void benchDefault(benchmark::State& state) {
 
 void emitMetadata() {
   const char* outDir = std::getenv("BENCH_OUTPUT_DIR");
-  std::string dir = outDir ? outDir : "results";
+  std::string dir = outDir ? outDir : std::string{defaultOutputDir};
   std::filesystem::create_directories(dir);
 
   RunMetadata meta = captureRunMetadata();

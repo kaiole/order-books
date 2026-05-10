@@ -145,8 +145,10 @@ def discover_runs(results_dir: str | Path) -> list[tuple[RunMetadata, Path]]:
 
     for meta_path in sorted(results_dir.glob("meta_*.json")):
         meta = read_metadata(meta_path)
+        if not meta.raw.file:
+            continue
         raw_path = results_dir / meta.raw.file
-        if not raw_path.exists():
+        if not raw_path.is_file():
             raise FileNotFoundError(
                 f"raw file missing for {meta_path}: {raw_path}")
         pairs.append((meta, raw_path))

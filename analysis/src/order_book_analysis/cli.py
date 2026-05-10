@@ -50,6 +50,30 @@ def _plot(args: argparse.Namespace) -> int:
               file=sys.stderr)
         return 2
 
+    if out.is_dir():
+        existing = sorted(
+            p for p in out.iterdir()
+            if p.is_file() and (
+                p.name == "percentiles.png"
+                or p.name.startswith(("hist_", "cdf_"))
+                and p.suffix == ".png"
+            )
+        )
+        if existing:
+            print(f"warning: {len(existing)} existing plot file(s) in {out} "
+                  f"will be overwritten:", file=sys.stderr)
+            for p in existing:
+                print(f"  {p.name}", file=sys.stderr)
+            if not args.force:
+                if not sys.stdin.isatty():
+                    print("aborting (non-interactive; pass --force to "
+                          "overwrite)", file=sys.stderr)
+                    return 1
+                reply = input("overwrite? [y/N] ").strip().lower()
+                if reply not in ("y", "yes"):
+                    print("aborted", file=sys.stderr)
+                    return 1
+
     written = plot_all(args.results_dir, out, xlimit=xlimit,
                        impls=args.impl, run_ids=args.run_id)
     for path in written:
@@ -72,7 +96,7 @@ def main(argv: list[str] | None = None) -> int:
         "summarize", help="compute percentile table for runs in a results dir")
     summarize.add_argument("results_dir", type=Path)
     summarize.add_argument("--out", type=Path, default=None,
-                             help="write CSV to this path (default: stdout)")
+                           help="write CSV to this path (default: stdout)")
     _add_filter_args(summarize)
     summarize.set_defaults(func=_summarize)
 
@@ -80,9 +104,11 @@ def main(argv: list[str] | None = None) -> int:
         "plot", help="generate latency plots for runs in a results dir")
     plot.add_argument("results_dir", type=Path)
     plot.add_argument("--out", type=Path, required=True,
-                        help="output directory for plot images")
+                      help="output directory for plot images")
     plot.add_argument("--xlimit", type=str, default=None,
-                        help="histogram xlimit as 'lo,hi' in ns (default: auto p99)")
+                      help="histogram xlimit as 'lo,hi' in ns (default: auto p99)")
+    plot.add_argument("--force", "-f", action="store_true",
+                      help="overwrite existing plots without confirmation")
     _add_filter_args(plot)
     plot.set_defaults(func=_plot)
 

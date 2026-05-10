@@ -5,6 +5,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <string_view>
+
+inline constexpr std::string_view defaultOutputDir = "artifacts/bench";
 
 enum class Impl : std::uint8_t {
   MapDeque,
@@ -41,6 +44,6 @@ struct WorkloadConfig {
 
 struct RunConfig {
   Impl impl = Impl::MapDeque;
-  std::string outputDir = "results";
+  std::string outputDir{defaultOutputDir};
   WorkloadConfig workload{};
 };
