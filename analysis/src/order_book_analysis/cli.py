@@ -14,23 +14,43 @@ def _summarize(args: argparse.Namespace) -> int:
               f"(impls={args.impl}, run_ids={args.run_id})", file=sys.stderr)
         return 1
 
+    df = df[df["n"] > 0].reset_index(drop=True)
+
     if args.out is None:
         print(df.to_string(index=False))
-    else:
-        out = Path(args.out)
-        out.parent.mkdir(parents=True, exist_ok=True)
-        df.to_csv(out, index=False)
-        print(f"wrote {out}")
+        return 0
+
+    out = Path(args.out)
+    if out.is_dir():
+        out = out / "summary.csv"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(out, index=False)
+    print(f"wrote {out}")
     return 0
 
 
 def _plot(args: argparse.Namespace) -> int:
     xlimit: tuple[float, float] | None = None
     if args.xlimit is not None:
-        lo, hi = args.xlimit.split(",")
-        xlimit = (float(lo), float(hi))
+        parts = args.xlimit.split(",")
+        if len(parts) != 2:
+            print(f"--xlimit must be 'lo,hi' (got {args.xlimit!r})",
+                  file=sys.stderr)
+            return 2
+        try:
+            xlimit = (float(parts[0]), float(parts[1]))
+        except ValueError:
+            print(f"--xlimit values must be numeric (got {args.xlimit!r})",
+                  file=sys.stderr)
+            return 2
 
-    written = plot_all(args.results_dir, args.out, xlimit=xlimit,
+    out = Path(args.out)
+    if out.exists() and not out.is_dir():
+        print(f"--out must be a directory (exists as file: {out})",
+              file=sys.stderr)
+        return 2
+
+    written = plot_all(args.results_dir, out, xlimit=xlimit,
                        impls=args.impl, run_ids=args.run_id)
     for path in written:
         print(f"wrote {path}")

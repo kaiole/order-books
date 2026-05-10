@@ -223,6 +223,9 @@ def plot_all(results_dir: str | Path, out_dir: str | Path,
             for impl, (_, raw) in latest.items()
         }
 
+        if not any(s.size for s in samples_by_impl.values()):
+            continue
+
         hist_suffix = mix_suffix if event_type == "all" else None
         hist_fig = plot_histogram(samples_by_impl, event_type, xlimit=xlimit,
                                   title_suffix=hist_suffix)
