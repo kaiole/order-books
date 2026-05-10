@@ -11,6 +11,7 @@ struct Event {
   EventType eventType;
   OrderId id;
   Side side;
+  TimeInForce tif;
   Price price;
   Quantity qty;
 };

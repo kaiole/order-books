@@ -18,8 +18,9 @@ if(NOT BENCH_GIT_COMMIT)
 endif()
 
 set(BENCH_COMMON_SOURCES
-    workload/event_generator.cpp output/run_metadata.cpp runner/run_perf.cpp
-    harness/parse_args.cpp output/write_latencies.cpp)
+    workload/event_generator.cpp workload/ghost_book.cpp
+    output/run_metadata.cpp runner/run_perf.cpp harness/parse_args.cpp
+    output/write_latencies.cpp)
 
 add_library(${PROJECT_NAME}_bench_common STATIC ${BENCH_COMMON_SOURCES})
 
