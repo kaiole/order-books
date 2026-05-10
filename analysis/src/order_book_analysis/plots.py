@@ -191,8 +191,7 @@ def _selected_runs(
 def plot_all(results_dir: str | Path, out_dir: str | Path,
              xlimit: tuple[float, float] | None = None,
              impls: Iterable[str] | None = None,
-             run_ids: Iterable[str] | None = None,
-             scenarios: Iterable[str] | None = None) -> list[Path]:
+             run_ids: Iterable[str] | None = None) -> list[Path]:
     results_dir = Path(results_dir)
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -201,14 +200,13 @@ def plot_all(results_dir: str | Path, out_dir: str | Path,
     if not pairs:
         raise FileNotFoundError(f"no runs in {results_dir}")
 
-    has_filter = any(x is not None for x in (impls, run_ids, scenarios))
+    has_filter = any(x is not None for x in (impls, run_ids))
     if has_filter:
-        pairs = filter_runs(pairs, impls=impls, run_ids=run_ids,
-                            scenarios=scenarios)
+        pairs = filter_runs(pairs, impls=impls, run_ids=run_ids)
         if not pairs:
             raise FileNotFoundError(
                 f"no runs in {results_dir} matched filters "
-                f"(impls={impls}, run_ids={run_ids}, scenarios={scenarios})")
+                f"(impls={impls}, run_ids={run_ids})")
         latest = _selected_runs(pairs)
     else:
         latest = _latest_run_per_impl(pairs)

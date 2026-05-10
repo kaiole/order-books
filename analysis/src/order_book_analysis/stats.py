@@ -40,11 +40,23 @@ def summarize(latencies: np.ndarray) -> dict[str, float]:
     return row
 
 
+def _format_mix(meta: RunMetadata) -> str:
+    w = meta.workload
+    return f"{w.add_ratio:.0%}/{w.modify_ratio:.0%}/{w.cancel_ratio:.0%}"
+
+
+def _format_tif(meta: RunMetadata) -> str:
+    w = meta.workload
+    return f"{w.gtc_ratio:.0%}/{w.ioc_ratio:.0%}/{w.fok_ratio:.0%}"
+
+
 def _row_for(meta: RunMetadata, event_type: str, latencies: np.ndarray) -> dict:
     return {
         "run_id": meta.run.run_id,
         "impl": meta.run.impl,
-        "scenario": meta.run.scenario,
+        "mix_a/m/c": _format_mix(meta),
+        "cross": f"{meta.workload.cross_probability:.0%}",
+        "tif_g/i/f": _format_tif(meta),
         "git_commit": meta.build.git_commit,
         "event_type": event_type,
         **summarize(latencies),
@@ -79,8 +91,7 @@ def summarize_dir(
     results_dir: str | Path,
     impls: Iterable[str] | None = None,
     run_ids: Iterable[str] | None = None,
-    scenarios: Iterable[str] | None = None,
 ) -> pd.DataFrame:
     pairs = discover_runs(results_dir)
-    pairs = filter_runs(pairs, impls=impls, run_ids=run_ids, scenarios=scenarios)
+    pairs = filter_runs(pairs, impls=impls, run_ids=run_ids)
     return summarize_runs(pairs)

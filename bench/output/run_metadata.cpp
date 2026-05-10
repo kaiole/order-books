@@ -216,7 +216,6 @@ void writeMetadataJson(const std::string& path, const RunMetadata& meta,
   out << "  \"run\": {\n";
   writeKv(out, "runId", meta.runId, false);
   writeKv(out, "timestamp", meta.timestampIso8601, false);
-  writeKv(out, "scenario", run.scenarioName, false);
   writeKv(out, "impl", implName(run.impl), true);
   out << "  },\n";
 
@@ -230,7 +229,11 @@ void writeMetadataJson(const std::string& path, const RunMetadata& meta,
   writeKvNum(out, "midPrice", run.workload.midPrice, false);
   writeKvNum(out, "maxPriceOffset", run.workload.maxPriceOffset, false);
   writeKvNum(out, "minQty", run.workload.minQty, false);
-  writeKvNum(out, "maxQty", run.workload.maxQty, true);
+  writeKvNum(out, "maxQty", run.workload.maxQty, false);
+  writeKvNum(out, "crossProbability", run.workload.crossProbability, false);
+  writeKvNum(out, "gtcRatio", run.workload.tifMix.gtc, false);
+  writeKvNum(out, "iocRatio", run.workload.tifMix.ioc, false);
+  writeKvNum(out, "fokRatio", run.workload.tifMix.fok, true);
   out << "  },\n";
 
   out << "  \"build\": {\n";

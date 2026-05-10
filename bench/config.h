@@ -41,7 +41,6 @@ struct WorkloadConfig {
 
 struct RunConfig {
   Impl impl = Impl::MapDeque;
-  std::string scenarioName = "default";
   std::string outputDir = "results";
   WorkloadConfig workload{};
 };

@@ -71,7 +71,6 @@ void emitMetadata() {
 
   RunMetadata meta = captureRunMetadata();
   RunConfig run;
-  run.scenarioName = "default";
   run.outputDir = dir;
   run.workload = defaultWorkload(1'000'000, 100'000);
 

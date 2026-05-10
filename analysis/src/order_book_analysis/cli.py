@@ -8,11 +8,10 @@ from .stats import summarize_dir
 
 def _summarize(args: argparse.Namespace) -> int:
     df = summarize_dir(args.results_dir, impls=args.impl,
-                       run_ids=args.run_id, scenarios=args.scenario)
+                       run_ids=args.run_id)
     if df.empty:
         print(f"no runs found in {args.results_dir} "
-              f"(impls={args.impl}, run_ids={args.run_id}, "
-              f"scenarios={args.scenario})", file=sys.stderr)
+              f"(impls={args.impl}, run_ids={args.run_id})", file=sys.stderr)
         return 1
 
     if args.out is None:
@@ -32,8 +31,7 @@ def _plot(args: argparse.Namespace) -> int:
         xlimit = (float(lo), float(hi))
 
     written = plot_all(args.results_dir, args.out, xlimit=xlimit,
-                       impls=args.impl, run_ids=args.run_id,
-                       scenarios=args.scenario)
+                       impls=args.impl, run_ids=args.run_id)
     for path in written:
         print(f"wrote {path}")
     return 0
@@ -44,8 +42,6 @@ def _add_filter_args(parser: argparse.ArgumentParser) -> None:
                         help="filter by impl (repeatable; OR within flag)")
     parser.add_argument("--run-id", action="append", default=None,
                         help="filter by run_id (repeatable; OR within flag)")
-    parser.add_argument("--scenario", action="append", default=None,
-                        help="filter by scenario (repeatable; OR within flag)")
 
 
 def main(argv: list[str] | None = None) -> int:

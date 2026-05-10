@@ -8,7 +8,6 @@ from typing import Iterable
 class RunInfo:
     run_id: str
     timestamp: str
-    scenario: str
     impl: str
 
 
@@ -24,6 +23,10 @@ class WorkloadInfo:
     max_price_offset: int
     min_qty: int
     max_qty: int
+    cross_probability: float
+    gtc_ratio: float
+    ioc_ratio: float
+    fok_ratio: float
 
 
 @dataclass(frozen=True)
@@ -77,7 +80,6 @@ def read_metadata(path: str | Path) -> RunMetadata:
         run=RunInfo(
             run_id=run["runId"],
             timestamp=run["timestamp"],
-            scenario=run["scenario"],
             impl=run["impl"],
         ),
         workload=WorkloadInfo(
@@ -91,6 +93,10 @@ def read_metadata(path: str | Path) -> RunMetadata:
             max_price_offset=workload["maxPriceOffset"],
             min_qty=workload["minQty"],
             max_qty=workload["maxQty"],
+            cross_probability=workload.get("crossProbability", 0.0),
+            gtc_ratio=workload.get("gtcRatio", 1.0),
+            ioc_ratio=workload.get("iocRatio", 0.0),
+            fok_ratio=workload.get("fokRatio", 0.0),
         ),
         build=BuildInfo(
             compiler=build["compiler"],
@@ -118,19 +124,15 @@ def filter_runs(
     pairs: list[tuple[RunMetadata, Path]],
     impls: Iterable[str] | None = None,
     run_ids: Iterable[str] | None = None,
-    scenarios: Iterable[str] | None = None,
 ) -> list[tuple[RunMetadata, Path]]:
     impl_set = set(impls) if impls else None
     run_id_set = set(run_ids) if run_ids else None
-    scenario_set = set(scenarios) if scenarios else None
 
     out: list[tuple[RunMetadata, Path]] = []
     for meta, raw_path in pairs:
         if impl_set is not None and meta.run.impl not in impl_set:
             continue
         if run_id_set is not None and meta.run.run_id not in run_id_set:
-            continue
-        if scenario_set is not None and meta.run.scenario not in scenario_set:
             continue
         out.append((meta, raw_path))
 

@@ -19,7 +19,6 @@ constexpr std::string_view seedFlag = "--seed";
 constexpr std::string_view addRatioFlag = "--add-ratio";
 constexpr std::string_view cancelRatioFlag = "--cancel-ratio";
 constexpr std::string_view modifyRatioFlag = "--modify-ratio";
-constexpr std::string_view scenarioFlag = "--scenario";
 constexpr std::string_view outputDirFlag = "--output-dir";
 constexpr std::string_view maxPriceOffsetFlag = "--max-price-offset";
 constexpr std::string_view crossProbFlag = "--cross-prob";
@@ -139,8 +138,6 @@ RunConfig parseArgs(int argc, char** argv) {
       config.workload.mix.cancel = parseDouble(value);
     } else if (flag == modifyRatioFlag) {
       config.workload.mix.modify = parseDouble(value);
-    } else if (flag == scenarioFlag) {
-      config.scenarioName = std::string(value);
     } else if (flag == outputDirFlag) {
       config.outputDir = std::string(value);
     } else if (flag == maxPriceOffsetFlag) {
@@ -169,7 +166,7 @@ RunConfig parseArgs(int argc, char** argv) {
         "[--cross-prob=<double>] [--gtc-ratio=<double>] "
         "[--ioc-ratio=<double>] [--fok-ratio=<double>] "
         "[--size=<n>] [--warmup=<n>] [--seed=<n>] "
-        "[--scenario=<name>] [--output-dir=<path>] "
+        "[--output-dir=<path>] "
         "[--max-price-offset=<n>]");
   }
 
