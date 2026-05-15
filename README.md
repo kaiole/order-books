@@ -188,6 +188,11 @@ Example:
 events run before measurement. The generator also runs an internal prefill pass
 before warmup to populate the book.
 
+The realized event mix can drift from the requested ratios under certain
+conditions (e.g. modify on a qty-1 order becomes cancel, cross requests with
+no opposing liquidity are dropped). See
+[`docs/benchmark_drift.md`](docs/benchmark_drift.md) for the full catalogue.
+
 ### Google Benchmark
 
 ```sh
