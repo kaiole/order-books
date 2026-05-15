@@ -1,8 +1,8 @@
 #include "config.h"
-#include "workload/ghost_book.h"
 #include "order_book/order_book_impl.h"
 #include "parse_args.h"
 #include "runner/run_benchmark.h"
+#include "workload/ghost_book.h"
 
 #include <exception>
 #include <iostream>

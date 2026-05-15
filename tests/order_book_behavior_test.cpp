@@ -1,6 +1,6 @@
-#include "workload/ghost_book.h"
 #include "order_book/order_book.h"
 #include "order_book/types.h"
+#include "workload/ghost_book.h"
 
 #include <gtest/gtest.h>
 #include <optional>

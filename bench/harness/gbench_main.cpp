@@ -1,11 +1,11 @@
 #include "config.h"
-#include "workload/ghost_book.h"
 #include "order_book/order_book.h"
 #include "order_book/order_book_impl.h"
 #include "output/run_metadata.h"
 #include "runner/workload_runners.h"
 #include "workload/event.h"
 #include "workload/event_generator.h"
+#include "workload/ghost_book.h"
 
 #include <benchmark/benchmark.h>
 #include <cstddef>
