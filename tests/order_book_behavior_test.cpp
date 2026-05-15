@@ -1,8 +1,4 @@
-#include "order_book/deque_fat_order_book.h"
-#include "order_book/deque_iter_order_book.h"
-#include "order_book/deque_order_book.h"
-#include "order_book/list_iter_order_book.h"
-#include "order_book/list_order_book.h"
+#include "workload/ghost_book.h"
 #include "order_book/order_book.h"
 #include "order_book/types.h"
 
@@ -22,11 +18,7 @@ Order makeOrder(OrderId id, Side side, Price price, Quantity qty,
                .qty = qty};
 }
 
-static_assert(OrderBookLike<DequeOrderBook>);
-static_assert(OrderBookLike<ListOrderBook>);
-static_assert(OrderBookLike<DequeIterOrderBook>);
-static_assert(OrderBookLike<ListIterOrderBook>);
-static_assert(OrderBookLike<DequeFatOrderBook>);
+static_assert(OrderBookLike<GhostBook>);
 
 template <typename T>
 class OrderBookTestBase : public ::testing::Test {
@@ -52,25 +44,7 @@ class ModifyTest : public OrderBookTestBase<T> {};
 template <typename T>
 class CancelTest : public OrderBookTestBase<T> {};
 
-// Run suites on specified implementations
-using RestingImpl = ::testing::Types<ListOrderBook>;
-using MatchingImpl = ::testing::Types<ListOrderBook>;
-using MarketOrderImpl = ::testing::Types<ListOrderBook>;
-using TifImpl = ::testing::Types<ListOrderBook>;
-using ModifyImpl = ::testing::Types<ListOrderBook>;
-using CancelImpl = ::testing::Types<ListOrderBook>;
-
-// TYPED_TEST_SUITE(RestingTest, RestingImpl);
-// TYPED_TEST_SUITE(MatchingTest, MatchingImpl);
-// TYPED_TEST_SUITE(MarketOrderTest, MarketOrderImpl);
-// TYPED_TEST_SUITE(TifTest, TifImpl);
-// TYPED_TEST_SUITE(ModifyTest, ModifyImpl);
-// TYPED_TEST_SUITE(CancelTest, CancelImpl);
-
-// Run all suites on all implementations
-using FullImpl =
-    ::testing::Types<DequeOrderBook, ListOrderBook, DequeIterOrderBook,
-                     ListIterOrderBook, DequeFatOrderBook>;
+using FullImpl = ::testing::Types<GhostBook>;
 
 TYPED_TEST_SUITE(RestingTest, FullImpl);
 TYPED_TEST_SUITE(MatchingTest, FullImpl);

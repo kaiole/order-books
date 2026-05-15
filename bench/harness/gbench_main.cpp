@@ -1,10 +1,7 @@
 #include "config.h"
-#include "order_book/deque_fat_order_book.h"
-#include "order_book/deque_iter_order_book.h"
-#include "order_book/deque_order_book.h"
-#include "order_book/list_iter_order_book.h"
-#include "order_book/list_order_book.h"
+#include "workload/ghost_book.h"
 #include "order_book/order_book.h"
+#include "order_book/order_book_impl.h"
 #include "output/run_metadata.h"
 #include "runner/workload_runners.h"
 #include "workload/event.h"
@@ -80,28 +77,13 @@ void emitMetadata() {
 
 } // namespace
 
-BENCHMARK(benchDefault<DequeOrderBook>)
-    ->Name("Deque/default")
+BENCHMARK(benchDefault<GhostBook>)
+    ->Name("Ghost/default")
     ->Args({1'000'000, 100'000})
     ->Unit(benchmark::kMillisecond);
 
-BENCHMARK(benchDefault<ListOrderBook>)
-    ->Name("List/default")
-    ->Args({1'000'000, 100'000})
-    ->Unit(benchmark::kMillisecond);
-
-BENCHMARK(benchDefault<DequeIterOrderBook>)
-    ->Name("DequeIter/default")
-    ->Args({1'000'000, 100'000})
-    ->Unit(benchmark::kMillisecond);
-
-BENCHMARK(benchDefault<ListIterOrderBook>)
-    ->Name("ListIter/default")
-    ->Args({1'000'000, 100'000})
-    ->Unit(benchmark::kMillisecond);
-
-BENCHMARK(benchDefault<DequeFatOrderBook>)
-    ->Name("DequeFat/default")
+BENCHMARK(benchDefault<OrderBook>)
+    ->Name("OrderBook/default")
     ->Args({1'000'000, 100'000})
     ->Unit(benchmark::kMillisecond);
 

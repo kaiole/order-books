@@ -82,24 +82,12 @@ T parseNum(std::string_view value) {
 }
 
 Impl parseImpl(std::string_view value) {
-  if (value == "Deque" || value == "deque") {
-    return Impl::Deque;
+  if (value == "Ghost" || value == "ghost") {
+    return Impl::Ghost;
   }
 
-  if (value == "List" || value == "list") {
-    return Impl::List;
-  }
-
-  if (value == "DequeIter" || value == "dequeiter") {
-    return Impl::DequeIter;
-  }
-
-  if (value == "ListIter" || value == "listiter") {
-    return Impl::ListIter;
-  }
-
-  if (value == "DequeFat" || value == "dequefat") {
-    return Impl::DequeFat;
+  if (value == "OrderBook" || value == "orderbook") {
+    return Impl::OrderBook;
   }
 
   throw std::invalid_argument("unknown impl: " + std::string(value));
@@ -160,7 +148,7 @@ RunConfig parseArgs(int argc, char** argv) {
     throw std::invalid_argument(
         "missing required args\n"
         "usage: "
-        "--impl=<Deque|List|DequeIter|ListIter|DequeFat> "
+        "--impl=<Ghost|OrderBook> "
         "[--add-ratio=<double>] [--cancel-ratio=<double>] "
         "[--modify-ratio=<double>] "
         "[--cross-prob=<double>] [--gtc-ratio=<double>] "

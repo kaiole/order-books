@@ -1,9 +1,6 @@
 #include "config.h"
-#include "order_book/deque_fat_order_book.h"
-#include "order_book/deque_iter_order_book.h"
-#include "order_book/deque_order_book.h"
-#include "order_book/list_iter_order_book.h"
-#include "order_book/list_order_book.h"
+#include "workload/ghost_book.h"
+#include "order_book/order_book_impl.h"
 #include "parse_args.h"
 #include "runner/run_benchmark.h"
 
@@ -15,20 +12,11 @@ int main(int argc, char** argv) {
     RunConfig config = parseArgs(argc, argv);
 
     switch (config.impl) {
-    case Impl::Deque:
-      runBenchmark<DequeOrderBook>(config);
+    case Impl::Ghost:
+      runBenchmark<GhostBook>(config);
       break;
-    case Impl::List:
-      runBenchmark<ListOrderBook>(config);
-      break;
-    case Impl::DequeIter:
-      runBenchmark<DequeIterOrderBook>(config);
-      break;
-    case Impl::ListIter:
-      runBenchmark<ListIterOrderBook>(config);
-      break;
-    case Impl::DequeFat:
-      runBenchmark<DequeFatOrderBook>(config);
+    case Impl::OrderBook:
+      runBenchmark<OrderBook>(config);
       break;
     }
   } catch (const std::exception& err) {

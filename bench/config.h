@@ -9,7 +9,7 @@
 
 inline constexpr std::string_view defaultOutputDir = "artifacts/bench";
 
-enum class Impl : std::uint8_t { Deque, List, DequeIter, ListIter, DequeFat };
+enum class Impl : std::uint8_t { Ghost, OrderBook };
 
 struct EventMix {
   double add;
@@ -37,7 +37,7 @@ struct WorkloadConfig {
 };
 
 struct RunConfig {
-  Impl impl = Impl::Deque;
+  Impl impl = Impl::Ghost;
   std::string outputDir{defaultOutputDir};
   WorkloadConfig workload{};
 };
