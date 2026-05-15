@@ -1,4 +1,4 @@
-#include "order_book/map_deque_iter_order_book.h"
+#include "order_book/deque_order_book.h"
 
 #include "order_book/types.h"
 
@@ -7,7 +7,7 @@
 #include <optional>
 #include <utility>
 
-Trades MapDequeIterOrderBook::addOrder(Order order) {
+Trades DequeOrderBook::addOrder(Order order) {
   Trades trades;
 
   if (order.qty <= 0 || orders_.contains(order.id)) {
@@ -36,20 +36,26 @@ Trades MapDequeIterOrderBook::addOrder(Order order) {
   return trades;
 }
 
-bool MapDequeIterOrderBook::modifyOrder(OrderId id, Quantity newQty) {
-  auto recordIt = orders_.find(id);
+bool DequeOrderBook::modifyOrder(OrderId id, Quantity newQty) {
+  auto orderIt = orders_.find(id);
 
-  if (recordIt == orders_.end()) {
+  if (orderIt == orders_.end()) {
     return false;
   }
 
-  auto& record = recordIt->second;
-  auto& order = record.order;
+  auto& order = orderIt->second;
   if (newQty >= order.qty || newQty <= 0) {
     return false;
   }
 
-  auto& level = record.levelIt->second;
+  auto& levels = order.side == Side::Bid ? bids_ : asks_;
+  auto levelIt = levels.find(order.price);
+
+  if (levelIt == levels.end()) {
+    return false;
+  }
+
+  auto& level = levelIt->second;
 
   level.totalQty += newQty - order.qty;
   order.qty = newQty;
@@ -57,19 +63,23 @@ bool MapDequeIterOrderBook::modifyOrder(OrderId id, Quantity newQty) {
   return true;
 }
 
-bool MapDequeIterOrderBook::cancelOrder(OrderId id) {
-  auto recordIt = orders_.find(id);
+bool DequeOrderBook::cancelOrder(OrderId id) {
+  auto orderIt = orders_.find(id);
 
-  if (recordIt == orders_.end()) {
+  if (orderIt == orders_.end()) {
     return false;
   }
 
-  auto& record = recordIt->second;
-  const auto& order = record.order;
+  const auto& order = orderIt->second;
   auto& levels = order.side == Side::Bid ? bids_ : asks_;
-  auto levelIt = record.levelIt;
-  auto& level = levelIt->second;
 
+  auto levelIt = levels.find(order.price);
+
+  if (levelIt == levels.end()) {
+    return false;
+  }
+
+  auto& level = levelIt->second;
   auto queueIt = std::find(level.queue.begin(), level.queue.end(), id);
 
   if (queueIt == level.queue.end()) {
@@ -83,13 +93,12 @@ bool MapDequeIterOrderBook::cancelOrder(OrderId id) {
     levels.erase(levelIt);
   }
 
-  orders_.erase(recordIt);
+  orders_.erase(orderIt);
 
   return true;
 }
 
-std::optional<std::pair<Price, Quantity>>
-MapDequeIterOrderBook::bestBid() const {
+std::optional<std::pair<Price, Quantity>> DequeOrderBook::bestBid() const {
   if (bids_.empty()) {
     return std::nullopt;
   }
@@ -98,8 +107,7 @@ MapDequeIterOrderBook::bestBid() const {
   return std::pair<Price, Quantity>{price, level.totalQty};
 }
 
-std::optional<std::pair<Price, Quantity>>
-MapDequeIterOrderBook::bestAsk() const {
+std::optional<std::pair<Price, Quantity>> DequeOrderBook::bestAsk() const {
   if (asks_.empty()) {
     return std::nullopt;
   }
@@ -108,7 +116,7 @@ MapDequeIterOrderBook::bestAsk() const {
   return std::pair<Price, Quantity>{price, level.totalQty};
 }
 
-Quantity MapDequeIterOrderBook::qtyAt(Side side, Price price) const {
+Quantity DequeOrderBook::qtyAt(Side side, Price price) const {
   const auto& levels = side == Side::Bid ? bids_ : asks_;
   const auto levelIt = levels.find(price);
 
@@ -119,13 +127,13 @@ Quantity MapDequeIterOrderBook::qtyAt(Side side, Price price) const {
   return levelIt->second.totalQty;
 }
 
-std::size_t MapDequeIterOrderBook::depth(Side side) const {
+std::size_t DequeOrderBook::depth(Side side) const {
   return side == Side::Bid ? bids_.size() : asks_.size();
 }
 
-std::size_t MapDequeIterOrderBook::orderCount() const { return orders_.size(); }
+std::size_t DequeOrderBook::orderCount() const { return orders_.size(); }
 
-void MapDequeIterOrderBook::matchOrder(Order& order, Trades& trades) {
+void DequeOrderBook::matchOrder(Order& order, Trades& trades) {
   auto& levels = order.side == Side::Bid ? asks_ : bids_;
 
   while (order.qty > 0 && !levels.empty()) {
@@ -141,8 +149,8 @@ void MapDequeIterOrderBook::matchOrder(Order& order, Trades& trades) {
     auto& queue = level.queue;
 
     while (order.qty > 0 && !queue.empty()) {
-      auto restingRecordIt = orders_.find(queue.front());
-      auto& restingOrder = restingRecordIt->second.order;
+      auto restingIt = orders_.find(queue.front());
+      auto& restingOrder = restingIt->second;
 
       Quantity filledQty = std::min(order.qty, restingOrder.qty);
 
@@ -157,7 +165,7 @@ void MapDequeIterOrderBook::matchOrder(Order& order, Trades& trades) {
 
       if (restingOrder.qty == 0) {
         queue.pop_front();
-        orders_.erase(restingRecordIt);
+        orders_.erase(restingIt);
       }
     }
 
@@ -167,8 +175,7 @@ void MapDequeIterOrderBook::matchOrder(Order& order, Trades& trades) {
   }
 }
 
-bool MapDequeIterOrderBook::canCross(const Order& order,
-                                     Price restingPrice) const {
+bool DequeOrderBook::canCross(const Order& order, Price restingPrice) const {
   if (order.type == OrderType::Market) {
     return true;
   }
@@ -180,18 +187,18 @@ bool MapDequeIterOrderBook::canCross(const Order& order,
   return order.price <= restingPrice;
 }
 
-void MapDequeIterOrderBook::insertResting(const Order& order) {
+void DequeOrderBook::insertResting(const Order& order) {
   auto& levels = order.side == Side::Bid ? bids_ : asks_;
   auto levelIt = levels.try_emplace(order.price).first;
   auto& level = levelIt->second;
 
   level.queue.push_back(order.id);
-  orders_.try_emplace(order.id, OrderRecord{order, levelIt});
+  orders_.try_emplace(order.id, order);
 
   level.totalQty += order.qty;
 }
 
-bool MapDequeIterOrderBook::canFullyFill(const Order& order) const {
+bool DequeOrderBook::canFullyFill(const Order& order) const {
   auto remainingAfterFill = [this, &order]<typename T>(T first, T last) {
     Quantity curQty{order.qty};
 

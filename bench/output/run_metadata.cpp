@@ -149,20 +149,20 @@ void writeKvNum(std::ostream& os, const std::string& key, T val, bool last) {
 
 std::string implName(Impl impl) {
   switch (impl) {
-  case Impl::MapDeque:
-    return "MapDeque";
+  case Impl::Deque:
+    return "Deque";
 
-  case Impl::MapList:
-    return "MapList";
+  case Impl::List:
+    return "List";
 
-  case Impl::MapDequeIter:
-    return "MapDequeIter";
+  case Impl::DequeIter:
+    return "DequeIter";
 
-  case Impl::MapListIter:
-    return "MapListIter";
+  case Impl::ListIter:
+    return "ListIter";
 
-  case Impl::MapDequeFat:
-    return "MapDequeFat";
+  case Impl::DequeFat:
+    return "DequeFat";
   }
 
   return "Unknown";

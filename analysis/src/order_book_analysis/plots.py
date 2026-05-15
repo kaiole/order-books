@@ -11,11 +11,11 @@ from .read_raw import RawFile, read_raw
 from .stats import EVENT_TYPE_NAMES, PERCENTILES, _percentile_key, summarize_runs
 
 IMPL_COLORS: dict[str, str] = {
-    "MapDeque": "#1f77b4",
-    "MapList": "#ff7f0e",
-    "MapDequeIter": "#2ca02c",
-    "MapListIter": "#d62728",
-    "MapDequeFat": "#9467bd",
+    "Deque": "#1f77b4",
+    "List": "#ff7f0e",
+    "DequeIter": "#2ca02c",
+    "ListIter": "#d62728",
+    "DequeFat": "#9467bd",
 }
 
 EVENT_TYPE_ORDER = ("all", "add", "modify", "cancel")

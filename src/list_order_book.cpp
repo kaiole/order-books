@@ -1,4 +1,4 @@
-#include "order_book/map_list_order_book.h"
+#include "order_book/list_order_book.h"
 
 #include "order_book/types.h"
 
@@ -6,7 +6,7 @@
 #include <optional>
 #include <utility>
 
-Trades MapListOrderBook::addOrder(Order order) {
+Trades ListOrderBook::addOrder(Order order) {
   Trades trades;
 
   if (order.qty <= 0 || orders_.contains(order.id)) {
@@ -35,7 +35,7 @@ Trades MapListOrderBook::addOrder(Order order) {
   return trades;
 }
 
-bool MapListOrderBook::modifyOrder(OrderId id, Quantity newQty) {
+bool ListOrderBook::modifyOrder(OrderId id, Quantity newQty) {
   auto it = orders_.find(id);
 
   if (it == orders_.end()) {
@@ -62,7 +62,7 @@ bool MapListOrderBook::modifyOrder(OrderId id, Quantity newQty) {
   return true;
 }
 
-bool MapListOrderBook::cancelOrder(OrderId id) {
+bool ListOrderBook::cancelOrder(OrderId id) {
   auto it = orders_.find(id);
 
   if (it == orders_.end()) {
@@ -91,7 +91,7 @@ bool MapListOrderBook::cancelOrder(OrderId id) {
   return true;
 }
 
-std::optional<std::pair<Price, Quantity>> MapListOrderBook::bestBid() const {
+std::optional<std::pair<Price, Quantity>> ListOrderBook::bestBid() const {
   if (bids_.empty()) {
     return std::nullopt;
   }
@@ -100,7 +100,7 @@ std::optional<std::pair<Price, Quantity>> MapListOrderBook::bestBid() const {
   return std::pair<Price, Quantity>{price, level.totalQty};
 }
 
-std::optional<std::pair<Price, Quantity>> MapListOrderBook::bestAsk() const {
+std::optional<std::pair<Price, Quantity>> ListOrderBook::bestAsk() const {
   if (asks_.empty()) {
     return std::nullopt;
   }
@@ -109,7 +109,7 @@ std::optional<std::pair<Price, Quantity>> MapListOrderBook::bestAsk() const {
   return std::pair<Price, Quantity>{price, level.totalQty};
 }
 
-Quantity MapListOrderBook::qtyAt(Side side, Price price) const {
+Quantity ListOrderBook::qtyAt(Side side, Price price) const {
   const auto& levels = side == Side::Bid ? bids_ : asks_;
   const auto levelIt = levels.find(price);
 
@@ -120,13 +120,13 @@ Quantity MapListOrderBook::qtyAt(Side side, Price price) const {
   return levelIt->second.totalQty;
 }
 
-std::size_t MapListOrderBook::depth(Side side) const {
+std::size_t ListOrderBook::depth(Side side) const {
   return side == Side::Bid ? bids_.size() : asks_.size();
 }
 
-std::size_t MapListOrderBook::orderCount() const { return orders_.size(); }
+std::size_t ListOrderBook::orderCount() const { return orders_.size(); }
 
-void MapListOrderBook::matchOrder(Order& order, Trades& trades) {
+void ListOrderBook::matchOrder(Order& order, Trades& trades) {
   auto& levels = order.side == Side::Bid ? asks_ : bids_;
 
   while (order.qty > 0 && !levels.empty()) {
@@ -167,7 +167,7 @@ void MapListOrderBook::matchOrder(Order& order, Trades& trades) {
   }
 }
 
-bool MapListOrderBook::canCross(const Order& order, Price restingPrice) const {
+bool ListOrderBook::canCross(const Order& order, Price restingPrice) const {
   if (order.type == OrderType::Market) {
     return true;
   }
@@ -179,7 +179,7 @@ bool MapListOrderBook::canCross(const Order& order, Price restingPrice) const {
   return order.price <= restingPrice;
 }
 
-void MapListOrderBook::insertResting(const Order& order) {
+void ListOrderBook::insertResting(const Order& order) {
   auto& levels = order.side == Side::Bid ? bids_ : asks_;
   auto levelIt = levels.try_emplace(order.price).first;
   auto& level = levelIt->second;
@@ -192,7 +192,7 @@ void MapListOrderBook::insertResting(const Order& order) {
   level.totalQty += order.qty;
 }
 
-bool MapListOrderBook::canFullyFill(const Order& order) const {
+bool ListOrderBook::canFullyFill(const Order& order) const {
   auto remainingAfterFill = [this, &order]<typename T>(T first, T last) {
     Quantity curQty{order.qty};
 

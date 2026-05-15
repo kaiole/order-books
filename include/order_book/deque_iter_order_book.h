@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <utility>
 
-class MapDequeFatOrderBook {
+class DequeIterOrderBook {
 public:
   Trades addOrder(Order order);
 
@@ -27,14 +27,19 @@ public:
 private:
   struct LevelInfo {
     Quantity totalQty{0};
-    std::deque<Order> queue;
+    std::deque<OrderId> queue;
   };
 
   using LevelMap = std::map<Price, LevelInfo>;
 
+  struct OrderRecord {
+    Order order;
+    LevelMap::iterator levelIt;
+  };
+
   LevelMap bids_;
   LevelMap asks_;
-  std::unordered_map<OrderId, LevelMap::iterator> orders_;
+  std::unordered_map<OrderId, OrderRecord> orders_;
 
   void matchOrder(Order& order, Trades& trades);
 

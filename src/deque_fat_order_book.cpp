@@ -1,4 +1,4 @@
-#include "order_book/map_deque_fat_order_book.h"
+#include "order_book/deque_fat_order_book.h"
 
 #include "order_book/types.h"
 
@@ -7,7 +7,7 @@
 #include <optional>
 #include <utility>
 
-Trades MapDequeFatOrderBook::addOrder(Order order) {
+Trades DequeFatOrderBook::addOrder(Order order) {
   Trades trades;
 
   if (order.qty <= 0 || orders_.contains(order.id)) {
@@ -36,7 +36,7 @@ Trades MapDequeFatOrderBook::addOrder(Order order) {
   return trades;
 }
 
-bool MapDequeFatOrderBook::modifyOrder(OrderId id, Quantity newQty) {
+bool DequeFatOrderBook::modifyOrder(OrderId id, Quantity newQty) {
   auto orderIt = orders_.find(id);
 
   if (orderIt == orders_.end()) {
@@ -63,7 +63,7 @@ bool MapDequeFatOrderBook::modifyOrder(OrderId id, Quantity newQty) {
   return true;
 }
 
-bool MapDequeFatOrderBook::cancelOrder(OrderId id) {
+bool DequeFatOrderBook::cancelOrder(OrderId id) {
   auto orderIt = orders_.find(id);
 
   if (orderIt == orders_.end()) {
@@ -94,8 +94,7 @@ bool MapDequeFatOrderBook::cancelOrder(OrderId id) {
   return true;
 }
 
-std::optional<std::pair<Price, Quantity>>
-MapDequeFatOrderBook::bestBid() const {
+std::optional<std::pair<Price, Quantity>> DequeFatOrderBook::bestBid() const {
   if (bids_.empty()) {
     return std::nullopt;
   }
@@ -104,8 +103,7 @@ MapDequeFatOrderBook::bestBid() const {
   return std::pair<Price, Quantity>{price, level.totalQty};
 }
 
-std::optional<std::pair<Price, Quantity>>
-MapDequeFatOrderBook::bestAsk() const {
+std::optional<std::pair<Price, Quantity>> DequeFatOrderBook::bestAsk() const {
   if (asks_.empty()) {
     return std::nullopt;
   }
@@ -114,7 +112,7 @@ MapDequeFatOrderBook::bestAsk() const {
   return std::pair<Price, Quantity>{price, level.totalQty};
 }
 
-Quantity MapDequeFatOrderBook::qtyAt(Side side, Price price) const {
+Quantity DequeFatOrderBook::qtyAt(Side side, Price price) const {
   const auto& levels = side == Side::Bid ? bids_ : asks_;
   const auto levelIt = levels.find(price);
 
@@ -125,13 +123,13 @@ Quantity MapDequeFatOrderBook::qtyAt(Side side, Price price) const {
   return levelIt->second.totalQty;
 }
 
-std::size_t MapDequeFatOrderBook::depth(Side side) const {
+std::size_t DequeFatOrderBook::depth(Side side) const {
   return side == Side::Bid ? bids_.size() : asks_.size();
 }
 
-std::size_t MapDequeFatOrderBook::orderCount() const { return orders_.size(); }
+std::size_t DequeFatOrderBook::orderCount() const { return orders_.size(); }
 
-void MapDequeFatOrderBook::matchOrder(Order& order, Trades& trades) {
+void DequeFatOrderBook::matchOrder(Order& order, Trades& trades) {
   auto& levels = order.side == Side::Bid ? asks_ : bids_;
 
   while (order.qty > 0 && !levels.empty()) {
@@ -172,8 +170,7 @@ void MapDequeFatOrderBook::matchOrder(Order& order, Trades& trades) {
   }
 }
 
-bool MapDequeFatOrderBook::canCross(const Order& order,
-                                    Price restingPrice) const {
+bool DequeFatOrderBook::canCross(const Order& order, Price restingPrice) const {
   if (order.type == OrderType::Market) {
     return true;
   }
@@ -185,7 +182,7 @@ bool MapDequeFatOrderBook::canCross(const Order& order,
   return order.price <= restingPrice;
 }
 
-void MapDequeFatOrderBook::insertResting(const Order& order) {
+void DequeFatOrderBook::insertResting(const Order& order) {
   auto& levels = order.side == Side::Bid ? bids_ : asks_;
   auto levelIt = levels.try_emplace(order.price).first;
   auto& level = levelIt->second;
@@ -196,7 +193,7 @@ void MapDequeFatOrderBook::insertResting(const Order& order) {
   level.totalQty += order.qty;
 }
 
-bool MapDequeFatOrderBook::canFullyFill(const Order& order) const {
+bool DequeFatOrderBook::canFullyFill(const Order& order) const {
   auto remainingAfterFill = [this, &order]<typename T>(T first, T last) {
     Quantity curQty{order.qty};
 
