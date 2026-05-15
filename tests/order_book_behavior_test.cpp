@@ -1,8 +1,8 @@
-#include "order_book/map_deque_fat_order_book.h"
-#include "order_book/map_deque_iter_order_book.h"
-#include "order_book/map_deque_order_book.h"
-#include "order_book/map_list_iter_order_book.h"
-#include "order_book/map_list_order_book.h"
+#include "order_book/deque_fat_order_book.h"
+#include "order_book/deque_iter_order_book.h"
+#include "order_book/deque_order_book.h"
+#include "order_book/list_iter_order_book.h"
+#include "order_book/list_order_book.h"
 #include "order_book/order_book.h"
 #include "order_book/types.h"
 
@@ -22,11 +22,11 @@ Order makeOrder(OrderId id, Side side, Price price, Quantity qty,
                .qty = qty};
 }
 
-static_assert(OrderBookLike<MapDequeOrderBook>);
-static_assert(OrderBookLike<MapListOrderBook>);
-static_assert(OrderBookLike<MapDequeIterOrderBook>);
-static_assert(OrderBookLike<MapListIterOrderBook>);
-static_assert(OrderBookLike<MapDequeFatOrderBook>);
+static_assert(OrderBookLike<DequeOrderBook>);
+static_assert(OrderBookLike<ListOrderBook>);
+static_assert(OrderBookLike<DequeIterOrderBook>);
+static_assert(OrderBookLike<ListIterOrderBook>);
+static_assert(OrderBookLike<DequeFatOrderBook>);
 
 template <typename T>
 class OrderBookTestBase : public ::testing::Test {
@@ -53,12 +53,12 @@ template <typename T>
 class CancelTest : public OrderBookTestBase<T> {};
 
 // Run suites on specified implementations
-using RestingImpl = ::testing::Types<MapListOrderBook>;
-using MatchingImpl = ::testing::Types<MapListOrderBook>;
-using MarketOrderImpl = ::testing::Types<MapListOrderBook>;
-using TifImpl = ::testing::Types<MapListOrderBook>;
-using ModifyImpl = ::testing::Types<MapListOrderBook>;
-using CancelImpl = ::testing::Types<MapListOrderBook>;
+using RestingImpl = ::testing::Types<ListOrderBook>;
+using MatchingImpl = ::testing::Types<ListOrderBook>;
+using MarketOrderImpl = ::testing::Types<ListOrderBook>;
+using TifImpl = ::testing::Types<ListOrderBook>;
+using ModifyImpl = ::testing::Types<ListOrderBook>;
+using CancelImpl = ::testing::Types<ListOrderBook>;
 
 // TYPED_TEST_SUITE(RestingTest, RestingImpl);
 // TYPED_TEST_SUITE(MatchingTest, MatchingImpl);
@@ -69,8 +69,8 @@ using CancelImpl = ::testing::Types<MapListOrderBook>;
 
 // Run all suites on all implementations
 using FullImpl =
-    ::testing::Types<MapDequeOrderBook, MapListOrderBook, MapDequeIterOrderBook,
-                     MapListIterOrderBook, MapDequeFatOrderBook>;
+    ::testing::Types<DequeOrderBook, ListOrderBook, DequeIterOrderBook,
+                     ListIterOrderBook, DequeFatOrderBook>;
 
 TYPED_TEST_SUITE(RestingTest, FullImpl);
 TYPED_TEST_SUITE(MatchingTest, FullImpl);

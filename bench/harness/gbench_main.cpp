@@ -1,9 +1,9 @@
 #include "config.h"
-#include "order_book/map_deque_fat_order_book.h"
-#include "order_book/map_deque_iter_order_book.h"
-#include "order_book/map_deque_order_book.h"
-#include "order_book/map_list_iter_order_book.h"
-#include "order_book/map_list_order_book.h"
+#include "order_book/deque_fat_order_book.h"
+#include "order_book/deque_iter_order_book.h"
+#include "order_book/deque_order_book.h"
+#include "order_book/list_iter_order_book.h"
+#include "order_book/list_order_book.h"
 #include "order_book/order_book.h"
 #include "output/run_metadata.h"
 #include "runner/workload_runners.h"
@@ -80,28 +80,28 @@ void emitMetadata() {
 
 } // namespace
 
-BENCHMARK(benchDefault<MapDequeOrderBook>)
-    ->Name("MapDeque/default")
+BENCHMARK(benchDefault<DequeOrderBook>)
+    ->Name("Deque/default")
     ->Args({1'000'000, 100'000})
     ->Unit(benchmark::kMillisecond);
 
-BENCHMARK(benchDefault<MapListOrderBook>)
-    ->Name("MapList/default")
+BENCHMARK(benchDefault<ListOrderBook>)
+    ->Name("List/default")
     ->Args({1'000'000, 100'000})
     ->Unit(benchmark::kMillisecond);
 
-BENCHMARK(benchDefault<MapDequeIterOrderBook>)
-    ->Name("MapDequeIter/default")
+BENCHMARK(benchDefault<DequeIterOrderBook>)
+    ->Name("DequeIter/default")
     ->Args({1'000'000, 100'000})
     ->Unit(benchmark::kMillisecond);
 
-BENCHMARK(benchDefault<MapListIterOrderBook>)
-    ->Name("MapListIter/default")
+BENCHMARK(benchDefault<ListIterOrderBook>)
+    ->Name("ListIter/default")
     ->Args({1'000'000, 100'000})
     ->Unit(benchmark::kMillisecond);
 
-BENCHMARK(benchDefault<MapDequeFatOrderBook>)
-    ->Name("MapDequeFat/default")
+BENCHMARK(benchDefault<DequeFatOrderBook>)
+    ->Name("DequeFat/default")
     ->Args({1'000'000, 100'000})
     ->Unit(benchmark::kMillisecond);
 

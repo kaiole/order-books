@@ -3,13 +3,13 @@
 #include "order_book/types.h"
 
 #include <cstddef>
-#include <deque>
+#include <list>
 #include <map>
 #include <optional>
 #include <unordered_map>
 #include <utility>
 
-class MapDequeOrderBook {
+class ListOrderBook {
 public:
   Trades addOrder(Order order);
 
@@ -27,12 +27,12 @@ public:
 private:
   struct LevelInfo {
     Quantity totalQty{0};
-    std::deque<OrderId> queue;
+    std::list<Order> queue;
   };
 
   std::map<Price, LevelInfo> bids_;
   std::map<Price, LevelInfo> asks_;
-  std::unordered_map<OrderId, Order> orders_;
+  std::unordered_map<OrderId, std::list<Order>::iterator> orders_;
 
   void matchOrder(Order& order, Trades& trades);
 

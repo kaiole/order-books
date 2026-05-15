@@ -82,24 +82,24 @@ T parseNum(std::string_view value) {
 }
 
 Impl parseImpl(std::string_view value) {
-  if (value == "MapDeque" || value == "mapdeque") {
-    return Impl::MapDeque;
+  if (value == "Deque" || value == "deque") {
+    return Impl::Deque;
   }
 
-  if (value == "MapList" || value == "maplist") {
-    return Impl::MapList;
+  if (value == "List" || value == "list") {
+    return Impl::List;
   }
 
-  if (value == "MapDequeIter" || value == "mapdequeiter") {
-    return Impl::MapDequeIter;
+  if (value == "DequeIter" || value == "dequeiter") {
+    return Impl::DequeIter;
   }
 
-  if (value == "MapListIter" || value == "maplistiter") {
-    return Impl::MapListIter;
+  if (value == "ListIter" || value == "listiter") {
+    return Impl::ListIter;
   }
 
-  if (value == "MapDequeFat" || value == "mapdequefat") {
-    return Impl::MapDequeFat;
+  if (value == "DequeFat" || value == "dequefat") {
+    return Impl::DequeFat;
   }
 
   throw std::invalid_argument("unknown impl: " + std::string(value));
@@ -160,7 +160,7 @@ RunConfig parseArgs(int argc, char** argv) {
     throw std::invalid_argument(
         "missing required args\n"
         "usage: "
-        "--impl=<MapDeque|MapList|MapDequeIter|MapListIter|MapDequeFat> "
+        "--impl=<Deque|List|DequeIter|ListIter|DequeFat> "
         "[--add-ratio=<double>] [--cancel-ratio=<double>] "
         "[--modify-ratio=<double>] "
         "[--cross-prob=<double>] [--gtc-ratio=<double>] "

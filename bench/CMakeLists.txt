@@ -80,7 +80,7 @@ set_tests_properties(bench_gbench_smoke PROPERTIES TIMEOUT 60)
 add_test(
   NAME bench_raw_smoke
   COMMAND
-    ${PROJECT_NAME}_bench --impl=MapList --add-ratio=0.6 --modify-ratio=0.2
+    ${PROJECT_NAME}_bench --impl=List --add-ratio=0.6 --modify-ratio=0.2
     --cancel-ratio=0.2 --size=10000 --warmup=1000
     --output-dir=${CMAKE_BINARY_DIR}/test_results)
 set_tests_properties(bench_raw_smoke PROPERTIES TIMEOUT 30)

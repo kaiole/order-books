@@ -1,9 +1,9 @@
 #include "config.h"
-#include "order_book/map_deque_fat_order_book.h"
-#include "order_book/map_deque_iter_order_book.h"
-#include "order_book/map_deque_order_book.h"
-#include "order_book/map_list_iter_order_book.h"
-#include "order_book/map_list_order_book.h"
+#include "order_book/deque_fat_order_book.h"
+#include "order_book/deque_iter_order_book.h"
+#include "order_book/deque_order_book.h"
+#include "order_book/list_iter_order_book.h"
+#include "order_book/list_order_book.h"
 #include "parse_args.h"
 #include "runner/run_benchmark.h"
 
@@ -15,20 +15,20 @@ int main(int argc, char** argv) {
     RunConfig config = parseArgs(argc, argv);
 
     switch (config.impl) {
-    case Impl::MapDeque:
-      runBenchmark<MapDequeOrderBook>(config);
+    case Impl::Deque:
+      runBenchmark<DequeOrderBook>(config);
       break;
-    case Impl::MapList:
-      runBenchmark<MapListOrderBook>(config);
+    case Impl::List:
+      runBenchmark<ListOrderBook>(config);
       break;
-    case Impl::MapDequeIter:
-      runBenchmark<MapDequeIterOrderBook>(config);
+    case Impl::DequeIter:
+      runBenchmark<DequeIterOrderBook>(config);
       break;
-    case Impl::MapListIter:
-      runBenchmark<MapListIterOrderBook>(config);
+    case Impl::ListIter:
+      runBenchmark<ListIterOrderBook>(config);
       break;
-    case Impl::MapDequeFat:
-      runBenchmark<MapDequeFatOrderBook>(config);
+    case Impl::DequeFat:
+      runBenchmark<DequeFatOrderBook>(config);
       break;
     }
   } catch (const std::exception& err) {
