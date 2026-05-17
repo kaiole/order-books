@@ -15,6 +15,7 @@ IMPL_COLORS: dict[str, str] = {
     "List": "#ff7f0e",
     "DequeIter": "#2ca02c",
     "ListIter": "#d62728",
+    "ListPtr": "#8c564b",
     "DequeFat": "#9467bd",
 }
 

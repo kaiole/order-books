@@ -9,7 +9,14 @@
 
 inline constexpr std::string_view defaultOutputDir = "artifacts/bench";
 
-enum class Impl : std::uint8_t { Deque, List, DequeIter, ListIter, DequeFat };
+enum class Impl : std::uint8_t {
+  Deque,
+  List,
+  DequeIter,
+  ListIter,
+  ListPtr,
+  DequeFat
+};
 
 struct EventMix {
   double add;

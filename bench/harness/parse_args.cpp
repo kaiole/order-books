@@ -98,6 +98,10 @@ Impl parseImpl(std::string_view value) {
     return Impl::ListIter;
   }
 
+  if (value == "ListPtr" || value == "listptr") {
+    return Impl::ListPtr;
+  }
+
   if (value == "DequeFat" || value == "dequefat") {
     return Impl::DequeFat;
   }
@@ -160,7 +164,7 @@ RunConfig parseArgs(int argc, char** argv) {
     throw std::invalid_argument(
         "missing required args\n"
         "usage: "
-        "--impl=<Deque|List|DequeIter|ListIter|DequeFat> "
+        "--impl=<Deque|List|DequeIter|ListIter|ListPtr|DequeFat> "
         "[--add-ratio=<double>] [--cancel-ratio=<double>] "
         "[--modify-ratio=<double>] "
         "[--cross-prob=<double>] [--gtc-ratio=<double>] "

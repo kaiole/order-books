@@ -4,6 +4,7 @@
 #include "order_book/deque_order_book.h"
 #include "order_book/list_iter_order_book.h"
 #include "order_book/list_order_book.h"
+#include "order_book/list_ptr_order_book.h"
 #include "order_book/order_book.h"
 #include "output/run_metadata.h"
 #include "runner/workload_runners.h"
@@ -97,6 +98,11 @@ BENCHMARK(benchDefault<DequeIterOrderBook>)
 
 BENCHMARK(benchDefault<ListIterOrderBook>)
     ->Name("ListIter/default")
+    ->Args({1'000'000, 100'000})
+    ->Unit(benchmark::kMillisecond);
+
+BENCHMARK(benchDefault<ListPtrOrderBook>)
+    ->Name("ListPtr/default")
     ->Args({1'000'000, 100'000})
     ->Unit(benchmark::kMillisecond);
 

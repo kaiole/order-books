@@ -3,6 +3,7 @@
 #include "order_book/deque_order_book.h"
 #include "order_book/list_iter_order_book.h"
 #include "order_book/list_order_book.h"
+#include "order_book/list_ptr_order_book.h"
 #include "order_book/order_book.h"
 #include "order_book/types.h"
 
@@ -26,6 +27,7 @@ static_assert(OrderBookLike<DequeOrderBook>);
 static_assert(OrderBookLike<ListOrderBook>);
 static_assert(OrderBookLike<DequeIterOrderBook>);
 static_assert(OrderBookLike<ListIterOrderBook>);
+static_assert(OrderBookLike<ListPtrOrderBook>);
 static_assert(OrderBookLike<DequeFatOrderBook>);
 
 template <typename T>
@@ -70,7 +72,7 @@ using CancelImpl = ::testing::Types<ListOrderBook>;
 // Run all suites on all implementations
 using FullImpl =
     ::testing::Types<DequeOrderBook, ListOrderBook, DequeIterOrderBook,
-                     ListIterOrderBook, DequeFatOrderBook>;
+                     ListIterOrderBook, ListPtrOrderBook, DequeFatOrderBook>;
 
 TYPED_TEST_SUITE(RestingTest, FullImpl);
 TYPED_TEST_SUITE(MatchingTest, FullImpl);

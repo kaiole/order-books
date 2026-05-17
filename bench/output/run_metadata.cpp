@@ -161,6 +161,9 @@ std::string implName(Impl impl) {
   case Impl::ListIter:
     return "ListIter";
 
+  case Impl::ListPtr:
+    return "ListPtr";
+
   case Impl::DequeFat:
     return "DequeFat";
   }
